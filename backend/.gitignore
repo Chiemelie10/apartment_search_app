@@ -1,0 +1,5 @@
+migrations
+settings.py
+.env
+database_setup.sql
+__pycache__
