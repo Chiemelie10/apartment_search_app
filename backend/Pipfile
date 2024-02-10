@@ -4,7 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
+mysqlclient = "*"
+drf-spectacular = "*"
+pillow = "*"
+django = {version = "*", extras = ["argon2"]}
+django-cors-headers = "*"
+djangorestframework = "*"
+djangorestframework-simplejwt = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
