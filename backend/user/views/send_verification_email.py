@@ -8,7 +8,7 @@ from user.utils import send_email_verification_link
 
 User = get_user_model()
 
-class SendEmailVerificationLink(APIView):
+class SendEmailVerificationToken(APIView):
     """This class defines a get method that handles sending verification emails."""
     def get(self, request, user_id):
         """
@@ -25,8 +25,16 @@ class SendEmailVerificationLink(APIView):
             user = User.objects.get(id=user_id)
             send_email_verification_link(user)
 
+            verification_token = user.verification_token
+
+            verification_token.is_for_password_reset = False
+            verification_token.is_used = False
+            verification_token.is_validated_for_password_reset = False
+            verification_token.otp_submission_time = None
+            verification_token.save()
+
             return Response({'message':
-                             f'An email verification link has been sent to {user.email}'},
+                             f'A One Time Password (OTP) has been sent to {user.email}'},
                              status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)

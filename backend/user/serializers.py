@@ -31,7 +31,9 @@ class UserSerializer(serializers.ModelSerializer):
     be validated when a request to register a user is made.
     """
     password = serializers.CharField(write_only=True)
-    profile_information = UserProfileSerializer(source='profile', required=False)
+    profile_information = UserProfileSerializer(
+        source='profile', read_only=True, required=False
+    )
 
     class Meta:
         """
@@ -45,11 +47,9 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         """This method does extra validation on the password field."""
         is_html_in_value, validated_value = check_html_tags(value)
-        print(is_html_in_value)
 
         if is_html_in_value is True:
             raise serializers.ValidationError('html tags or anything similar is not allowed')
-
 
         try:
             validate_password(validated_value)
@@ -68,7 +68,7 @@ class UserSerializer(serializers.ModelSerializer):
         return validated_value
 
 
-class VerifyEmailSerializer(serializers.ModelSerializer):
+class VerificationTokenSerializer(serializers.ModelSerializer):
     """This defines attributes of the VerificationModel that will be validated"""
     class Meta:
         """
@@ -78,3 +78,52 @@ class VerifyEmailSerializer(serializers.ModelSerializer):
         """
         model = VerificationToken
         fields = ['verification_token']
+
+
+# pylint: disable=abstract-method
+class ForgotPasswordSerializer(serializers.Serializer):
+    """
+    This class validates the fields of a POST request
+    made to the forgot password endpoint.
+    """
+    username = serializers.CharField(write_only=True, required=False)
+    email = serializers.EmailField(write_only=True, required=False)
+
+    def validate(self, attrs):
+        """
+        This method validates the request and returns the
+        value of the attrs in the request.
+        """
+        email = attrs.get('email')
+        username = attrs.get('username')
+
+        if not email and not username:
+            raise serializers.ValidationError('Email or username is required.')
+
+        if email and username:
+            raise serializers.ValidationError('Provide either email or username, not both.')
+
+        return attrs
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    """
+    This class validates the fields of a POST request
+    made to the password reset endpoint.
+    """
+    password = serializers.CharField(write_only=True)
+    verification_token = serializers.CharField(write_only=True)
+
+    def validate_password(self, value):
+        """This method does extra validation on the password field."""
+        is_html_in_value, validated_value = check_html_tags(value)
+
+        if is_html_in_value is True:
+            raise serializers.ValidationError('html tags or anything similar is not allowed')
+
+        try:
+            validate_password(validated_value)
+        except ValidationError as e:
+            raise serializers.ValidationError(str(e))
+
+        return validated_value

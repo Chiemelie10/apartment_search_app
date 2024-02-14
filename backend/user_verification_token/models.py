@@ -10,6 +10,10 @@ class VerificationToken(models.Model):
     verification_token = models.CharField(max_length=7)
     user = models.OneToOneField(User, on_delete=models.CASCADE,
                                 related_name='verification_token')
+    is_for_password_reset = models.BooleanField(default=False)
+    otp_submission_time = models.DateTimeField(null=True, blank=True)
+    is_validated_for_password_reset = models.BooleanField(default=False)
+    is_used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
 
     class Meta:
