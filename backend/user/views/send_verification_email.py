@@ -1,9 +1,10 @@
 """This module defines class SendEmailVerificationLink."""
+from smtplib import SMTPConnectError, SMTPException
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from user.utils import send_email_verification_link
+from user.utils import send_verification_token
 
 
 User = get_user_model()
@@ -23,7 +24,7 @@ class SendEmailVerificationToken(APIView):
 
         try:
             user = User.objects.get(id=user_id)
-            send_email_verification_link(user)
+            send_verification_token(user)
 
             verification_token = user.verification_token
 
@@ -34,9 +35,14 @@ class SendEmailVerificationToken(APIView):
             verification_token.save()
 
             return Response({'message':
-                             f'A One Time Password (OTP) has been sent to {user.email}'},
+                             f'A One Time Password (OTP) has been sent to {user.email}.'},
                              status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except SMTPConnectError:
+            return Response({'error': 'Failed to send email due to connection issues.'},
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except SMTPException as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

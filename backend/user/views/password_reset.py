@@ -2,6 +2,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.conf import settings
 from user.serializers import PasswordResetSerializer
 from user.utils import is_otp_submission_time_expired
 from user_verification_token.models import VerificationToken
@@ -37,10 +38,14 @@ class PasswordResetView(APIView):
                                     status=status.HTTP_401_UNAUTHORIZED)
 
                 if token.is_used is True:
-                    return Response({'error': 'Token has been used'},
+                    return Response({'error': 'Token has been used.'},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-                token_expired = is_otp_submission_time_expired(token, 600)
+                token_expired = is_otp_submission_time_expired(
+                    token,
+                    settings.EXP_OF_VALIDATED_PR_OTP
+                )
+
                 if token_expired is True:
                     return Response({'error': 'Token submission time has elapsed.'},
                                     status=status.HTTP_400_BAD_REQUEST)
@@ -55,6 +60,6 @@ class PasswordResetView(APIView):
                 message = 'Password reset was successful.'
                 return Response({'message': message}, status=status.HTTP_200_OK)
             except VerificationToken.DoesNotExist:
-                return Response({'error': 'Token is incorrect'},
+                return Response({'error': 'Token is incorrect.'},
                                 status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

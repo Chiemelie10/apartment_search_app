@@ -4,3 +4,5 @@ settings.py
 database_setup.sql
 __pycache__
 unimplemented_tasks.txt
+postgres_database_setup.sql
+.coverage

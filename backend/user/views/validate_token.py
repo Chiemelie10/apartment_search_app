@@ -2,6 +2,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.conf import settings
 from django.utils import timezone
 from user.serializers import VerificationTokenSerializer
 from user.utils import is_token_expired
@@ -35,21 +36,22 @@ class ValidateEmailVerificationTokenView(APIView):
                 token = VerificationToken.objects.get(verification_token=verification_token)
                 user = token.user
 
-                if user.is_verified is True:
-                    return Response({'error': 'Account has already been verified.'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-
                 if token.is_used is True:
                     return Response({'error': 'Token has been used.'},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-            except VerificationToken.DoesNotExist:
-                return Response({'error': 'Token is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+                if user.is_verified is True:
+                    return Response({'error': 'Account has already been verified.'},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
-            token_expired = is_token_expired(token, 600)
+            except VerificationToken.DoesNotExist:
+                return Response({'error': 'Token is incorrect.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            token_expired = is_token_expired(token, settings.OTP_EXP_TIME)
 
             if token_expired is True:
-                return Response({'error': 'Token has expired'},
+                return Response({'error': 'Token has expired.'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
             user.is_verified = True
@@ -86,12 +88,17 @@ class ValidatePasswordResetTokenView(APIView):
             try:
                 token = VerificationToken.objects.get(verification_token=verification_token)
             except VerificationToken.DoesNotExist:
-                return Response({'error': 'Token is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Token is incorrect.'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
-            token_expired = is_token_expired(token, 600)
+            if token.is_used is True:
+                return Response({'error': 'Token has been used.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            token_expired = is_token_expired(token, settings.OTP_EXP_TIME)
 
             if token_expired is True:
-                return Response({'error': 'Token has expired'},
+                return Response({'error': 'Token has expired.'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
             token.otp_submission_time = timezone.now()

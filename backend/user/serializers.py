@@ -49,7 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
         is_html_in_value, validated_value = check_html_tags(value)
 
         if is_html_in_value is True:
-            raise serializers.ValidationError('html tags or anything similar is not allowed')
+            raise serializers.ValidationError('html tags or anything similar is not allowed.')
 
         try:
             validate_password(validated_value)
@@ -63,7 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
         is_html_in_value, validated_value = check_html_tags(value)
 
         if is_html_in_value is True:
-            raise serializers.ValidationError('html tags or anything similar is not allowed')
+            raise serializers.ValidationError('html tags or anything similar is not allowed.')
 
         return validated_value
 
@@ -119,11 +119,11 @@ class PasswordResetSerializer(serializers.Serializer):
         is_html_in_value, validated_value = check_html_tags(value)
 
         if is_html_in_value is True:
-            raise serializers.ValidationError('html tags or anything similar is not allowed')
+            raise serializers.ValidationError('html tags or anything similar is not allowed.')
 
         try:
             validate_password(validated_value)
         except ValidationError as e:
-            raise serializers.ValidationError(str(e))
+            raise e
 
         return validated_value

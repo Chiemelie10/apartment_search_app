@@ -18,7 +18,7 @@ def token_generator():
         if not VerificationToken.objects.filter(verification_token=new_token).exists():
             return new_token
 
-def send_email_verification_link(user, for_password=False):
+def send_verification_token(user, for_password=False):
     """This function sends link for email verification to the user."""
     # pylint: disable=no-member
     # pylint: disable=broad-exception-caught

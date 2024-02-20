@@ -35,7 +35,7 @@ class SignUpView(APIView):
     def post(self, request):
         """This method creates a new user instance and saves it to the database."""
         if request.content_type != 'application/json':
-            return Response({'error': 'Content-Type must be application/json'},
+            return Response({'error': 'Content-Type must be application/json.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         serializer = UserSerializer(data=request.data)

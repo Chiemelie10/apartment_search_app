@@ -38,7 +38,7 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """This class defines the attributes of a user within the application."""
     id = models.CharField(default=uuid4, max_length=36,
-                          unique=True, primary_key=True, editable=False)
+                        unique=True, primary_key=True, editable=False)
     username = models.CharField(max_length=250, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
@@ -62,7 +62,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """This method returns a string representation of the instance of this class."""
         return f'{self.id} {self.username}'
-
 
 GENDER_CHOICES = (
     ('male', 'male'),
