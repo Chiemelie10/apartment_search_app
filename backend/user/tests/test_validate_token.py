@@ -25,7 +25,7 @@ class ValidateEmailTokenTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type='application/json'
         )
@@ -33,7 +33,7 @@ class ValidateEmailTokenTest(TestCase):
         self.user = User.objects.get(username='Test_user')
 
         self.client.get(
-            path=reverse('email-verification-token', kwargs={'user_id': self.user.id}),
+            path=reverse('email_verification_token', kwargs={'user_id': self.user.id}),
         )
 
         self.token = self.user.verification_token
@@ -48,7 +48,7 @@ class ValidateEmailTokenTest(TestCase):
         returned if a valid One Time Password (OTP) is submitted by the user. 
         """
         response = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -69,7 +69,7 @@ class ValidateEmailTokenTest(TestCase):
         returned if an incorrect One Time Password (OTP) is submitted by the user.
         """
         response = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data={'verification_token': 154628}, # Invalid or incorrect token
             content_type='application/json'
         )
@@ -89,7 +89,7 @@ class ValidateEmailTokenTest(TestCase):
         """
         # Request to submit otp to verify email
         self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -100,7 +100,7 @@ class ValidateEmailTokenTest(TestCase):
 
         # Another request to receive otp for email verification by the same user.
         self.client.get(
-            path=reverse('email-verification-token', kwargs={'user_id': user.id}),
+            path=reverse('email_verification_token', kwargs={'user_id': user.id}),
         )
 
         # New otp
@@ -110,7 +110,7 @@ class ValidateEmailTokenTest(TestCase):
 
         # Another request to verify email
         response2 = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=request_data2,
             content_type='application/json'
         )
@@ -130,7 +130,7 @@ class ValidateEmailTokenTest(TestCase):
         """
         # First user submits valid token and verifies email address.
         response1 = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -146,7 +146,7 @@ class ValidateEmailTokenTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data2,
             content_type='application/json'
         )
@@ -156,7 +156,7 @@ class ValidateEmailTokenTest(TestCase):
         # to a particular user, so will end up trying to verify the first user's
         # email address the second time.
         response2 = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -175,7 +175,7 @@ class ValidateEmailTokenTest(TestCase):
         time.sleep(3)
 
         response = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -195,7 +195,7 @@ class ValidateEmailTokenTest(TestCase):
         del self.request_data['verification_token']
 
         response = self.client.post(
-            path=reverse('verify-email'),
+            path=reverse('verify_email'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -219,7 +219,7 @@ class ValidatePasswordTokenTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type='application/json'
         )
@@ -229,7 +229,7 @@ class ValidatePasswordTokenTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -248,7 +248,7 @@ class ValidatePasswordTokenTest(TestCase):
         returned if a valid One Time Password (OTP) is submitted by the user. 
         """
         response = self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -271,7 +271,7 @@ class ValidatePasswordTokenTest(TestCase):
         returned if an incorrect One Time Password (OTP) is submitted by the user.
         """
         response = self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data={'verification_token': 154628}, # Invalid or incorrect token,
             content_type='application/json'
         )
@@ -294,7 +294,7 @@ class ValidatePasswordTokenTest(TestCase):
         """
         # First user submits valid token for password reset.
         self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -302,7 +302,7 @@ class ValidatePasswordTokenTest(TestCase):
         # First user resets password.
         self.request_data['password'] = 'new_password'
         self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -314,7 +314,7 @@ class ValidatePasswordTokenTest(TestCase):
 
         # Second person tries to use same otp used by user one to reset user1's password
         response = self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -330,7 +330,7 @@ class ValidatePasswordTokenTest(TestCase):
         time.sleep(3)
 
         response = self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -351,7 +351,7 @@ class ValidatePasswordTokenTest(TestCase):
         del self.request_data['verification_token']
 
         response = self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data=self.request_data,
             content_type='application/json'
         )

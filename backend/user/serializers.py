@@ -22,7 +22,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
                     to be validated
         """
         model = UserProfile
-        fields = '__all__'
+        fields = ['role', 'gender', 'interests', 'phone_number', 'profile_photo']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -112,7 +112,6 @@ class PasswordResetSerializer(serializers.Serializer):
     made to the password reset endpoint.
     """
     password = serializers.CharField(write_only=True)
-    verification_token = serializers.CharField(write_only=True)
 
     def validate_password(self, value):
         """This method does extra validation on the password field."""
@@ -127,3 +126,32 @@ class PasswordResetSerializer(serializers.Serializer):
             raise e
 
         return validated_value
+
+class LoginSerializer(serializers.Serializer):
+    """
+    This class lists the User class attributes that will be
+    validated in the LoginView.
+    """
+    username = serializers.CharField(write_only=True, required=False)
+    email = serializers.EmailField(write_only=True, required=False)
+    password = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, attrs):
+        """
+        This method validates the request and returns the
+        value of the attrs in the request.
+        """
+        username = attrs.get('username')
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if not email and not username:
+            raise serializers.ValidationError('Email or username is required.')
+
+        if email and username:
+            raise serializers.ValidationError('Provide either email or username, not both.')
+
+        if not password:
+            raise serializers.ValidationError('Password is required.')
+
+        return attrs

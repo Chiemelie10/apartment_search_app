@@ -4,6 +4,7 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from user_role.models import UserRole
+from user_interest.models import UserInterest
 
 
 class CustomUserManager(BaseUserManager):
@@ -72,11 +73,11 @@ class UserProfile(models.Model):
     """This class defines the additional fields need for a complete user profile."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile',
                                 primary_key=True)
-    user_role = models.ForeignKey(UserRole, related_name='profiles', blank=True,
-                                  on_delete=models.SET_NULL, null=True)
+    role = models.ForeignKey(UserRole, on_delete=models.SET_NULL, related_name='profiles',
+                             blank=True, null=True)
+    interests = models.ManyToManyField(UserInterest, through='UserProfileInterest', blank=True)
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, null=True, blank=True)
-    interests = models.TextField(null=True, blank=True)
-    phone_number = models.CharField(max_length=14,
+    phone_number = models.CharField(max_length=14, null=True, blank=True,
                                     validators=[MinLengthValidator(limit_value=11)])
     profile_photo = models.ImageField(upload_to='profile_photo', blank=True, null=True)
 
@@ -88,3 +89,21 @@ class UserProfile(models.Model):
         """This method returns a string representation of the instance of this class."""
         # pylint: disable=no-member
         return f'{self.user.id} {self.user.username}'
+
+
+class UserProfileInterest(models.Model):
+    """
+    This class defines the fields of the junction table between
+    user_profiles table and user_interests table.
+    """
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user_interest = models.ForeignKey(UserInterest, on_delete=models.CASCADE)
+
+    class Meta:
+        """ db_table: Name of the table this class creates in the database."""
+        db_table = 'user_profile_interests'
+
+    def __str__(self):
+        """This method returns a string representation of the instance of this class."""
+        # pylint: disable=no-member
+        return f'Username: {self.user_profile.user.username} - Interest: {self.user_interest.name}'

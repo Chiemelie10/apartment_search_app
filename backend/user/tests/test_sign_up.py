@@ -27,7 +27,7 @@ class SignUpViewTest(TestCase):
         a user and save to the database if serializer.is_valid() runs.
         """
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
             content_type="application/json"
         )
@@ -48,7 +48,7 @@ class SignUpViewTest(TestCase):
         data['password'] = '<script>password<script>'
 
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type="application/json"
         )
@@ -66,7 +66,7 @@ class SignUpViewTest(TestCase):
         if Content-Type is not set to application/json in the header of the request.
         """
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
         )
 
@@ -89,7 +89,7 @@ class SignUpViewTest(TestCase):
         data['is_active'] = False
 
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type="application/json"
         )
@@ -108,7 +108,7 @@ class SignUpViewTest(TestCase):
         for the created user is hashed.
         """
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
             content_type="application/json"
         )
@@ -127,7 +127,7 @@ class SignUpViewTest(TestCase):
         in the body of the request.
         """
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
             content_type="application/json"
         )
@@ -135,7 +135,7 @@ class SignUpViewTest(TestCase):
         self.data['email'] = 'test_user2@gmail.com'
 
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
             content_type="application/json"
         )
@@ -151,7 +151,7 @@ class SignUpViewTest(TestCase):
         is used in the body of the request.
         """
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
             content_type="application/json"
         )
@@ -159,7 +159,7 @@ class SignUpViewTest(TestCase):
         self.data['username'] = 'test_user2'
 
         response = self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=self.data,
             content_type="application/json"
         )

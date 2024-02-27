@@ -27,7 +27,7 @@ class SendVerificationEmailTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type='application/json'
         )
@@ -45,7 +45,7 @@ class SendVerificationEmailTest(TestCase):
         body of the request.
         """
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=self.request_body,
             content_type='application/json'
         )
@@ -71,7 +71,7 @@ class SendVerificationEmailTest(TestCase):
         request_body['email'] = 'test_user@gmail.com'
 
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -95,7 +95,7 @@ class SendVerificationEmailTest(TestCase):
         del request_body['username']
 
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -115,7 +115,7 @@ class SendVerificationEmailTest(TestCase):
         request_body['email'] = 'test_user@gmail.com'
 
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -137,7 +137,7 @@ class SendVerificationEmailTest(TestCase):
         request_body['username'] = 'wrong_username'
 
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -158,7 +158,7 @@ class SendVerificationEmailTest(TestCase):
         request_body['email'] = 'wrong_email@gmail.com'
 
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -176,7 +176,7 @@ class SendVerificationEmailTest(TestCase):
         request_body = self.request_body
 
         response = self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )

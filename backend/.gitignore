@@ -6,3 +6,7 @@ __pycache__
 unimplemented_tasks.txt
 postgres_database_setup.sql
 .coverage
+.private_key.pem
+.public_key.pem
+.generate_private_public_keys.py
+decode_token.py

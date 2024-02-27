@@ -21,7 +21,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from user.views.page_not_found import custom_404_view
+from user.exceptions.exception_handlers.page_not_found import custom_404_view
 
 
 urlpatterns = [
@@ -37,4 +37,4 @@ if settings.DEBUG:
 admin.site.site_header = 'FindAccommodationApp'
 
 # pylint: disable=invalid-name
-handler404 = 'user.views.page_not_found.custom_404_view'
+handler404 = 'user.exceptions.exception_handlers.page_not_found.custom_404_view'

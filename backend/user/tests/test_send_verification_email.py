@@ -26,7 +26,7 @@ class SendVerificationEmailTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type="application/json"
         )
@@ -41,7 +41,7 @@ class SendVerificationEmailTest(TestCase):
         user_id = self.user.id
 
         response = self.client.get(
-            path=reverse('email-verification-token', kwargs={'user_id': user_id}),
+            path=reverse('email_verification_token', kwargs={'user_id': user_id}),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -61,7 +61,7 @@ class SendVerificationEmailTest(TestCase):
         no matching user with that id in the database.
         """
         response = self.client.get(
-            path=reverse('email-verification-token', kwargs={'user_id': 'fake_user_id'}),
+            path=reverse('email_verification_token', kwargs={'user_id': 'fake_user_id'}),
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -78,7 +78,7 @@ class SendVerificationEmailTest(TestCase):
         user_id = self.user.id
 
         response = self.client.get(
-            path=reverse('email-verification-token', kwargs={'user_id': user_id}),
+            path=reverse('email_verification_token', kwargs={'user_id': user_id}),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -95,7 +95,7 @@ class SendVerificationEmailTest(TestCase):
         user_id = self.user.id
 
         response = self.client.get(
-            path=reverse('email-verification-token', kwargs={'user_id': user_id}),
+            path=reverse('email_verification_token', kwargs={'user_id': user_id}),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

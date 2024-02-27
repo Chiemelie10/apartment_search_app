@@ -10,10 +10,10 @@ pillow = "*"
 django = {version = "*", extras = ["argon2"]}
 django-cors-headers = "*"
 djangorestframework = "*"
-djangorestframework-simplejwt = "*"
 python-dotenv = "*"
 psycopg = "*"
 coverage = "*"
+djangorestframework-simplejwt = {version = "*", extras = ["crypto"]}
 
 [dev-packages]
 

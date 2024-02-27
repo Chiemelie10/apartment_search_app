@@ -1,6 +1,8 @@
 """This module defines some helper functions and classes for the user_app app."""
 # import threading
 from random import randint
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
@@ -72,21 +74,6 @@ def is_token_expired(token, exp_time_length):
         return True
     return False
 
-def is_otp_submission_time_expired(token, exp_time_length):
-    """
-    This function returns True if the difference between time of submission of the token string
-    and current time exceeds value of exp_time_length(seconds).
-    It returns False if the difference is less than that value.
-    """
-    token_submitted_at = token.otp_submission_time
-    current_time = timezone.now()
-
-    time_difference = current_time - token_submitted_at
-
-    if time_difference.total_seconds() > exp_time_length:
-        return True
-    return False
-
 def check_html_tags(value):
     """
     This function returns True if a html tag is present in the string value
@@ -94,3 +81,25 @@ def check_html_tags(value):
     """
     stripped_string = strip_tags(value)
     return value != stripped_string, stripped_string
+
+def get_tokens_for_user(user):
+    """This method generates refresh and access tokens for a user."""
+    # pylint: disable=no-member
+
+    refresh = RefreshToken.for_user(user)
+    refresh['user_role'] = user.profile.role
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
+def blacklist_outstanding_tokens(user):
+    """This function blacklists all outstanding tokens belonging to a user."""
+    # pylint: disable=broad-exception-caught
+    # pylint: disable=no-member
+
+    outstanding_tokens = OutstandingToken.objects.filter(user=user)
+    if outstanding_tokens.exists():
+        for token in outstanding_tokens:
+            BlacklistedToken.objects.get_or_create(token=token)

@@ -25,7 +25,7 @@ class PasswordResetViewTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('register-user'),
+            path=reverse('register_user'),
             data=data,
             content_type='application/json'
         )
@@ -35,7 +35,7 @@ class PasswordResetViewTest(TestCase):
         }
 
         self.client.post(
-            path=reverse('forgot-password-token'),
+            path=reverse('forgot_password_token'),
             data=request_body,
             content_type='application/json'
         )
@@ -46,7 +46,7 @@ class PasswordResetViewTest(TestCase):
         self.request_data = {'verification_token': self.token.verification_token}
 
         self.client.post(
-            path=reverse('validate-password-reset-token'),
+            path=reverse('validate_password_reset_token'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -62,7 +62,7 @@ class PasswordResetViewTest(TestCase):
         returned if a valid One Time Password (OTP) is submitted by the user. 
         """
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -85,7 +85,7 @@ class PasswordResetViewTest(TestCase):
         self.request_data['verification_token'] = '123456'
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -107,7 +107,7 @@ class PasswordResetViewTest(TestCase):
         """
         # First user resets password.
         self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -118,7 +118,7 @@ class PasswordResetViewTest(TestCase):
         # Second person tries to use same otp used by user one to reset user1's password
         self.request_data['password'] = 'hacked_password'
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -137,7 +137,7 @@ class PasswordResetViewTest(TestCase):
         user.verification_token.save()
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -156,7 +156,7 @@ class PasswordResetViewTest(TestCase):
         user.verification_token.save()
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -174,7 +174,7 @@ class PasswordResetViewTest(TestCase):
         time.sleep(3)
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -196,7 +196,7 @@ class PasswordResetViewTest(TestCase):
         del self.request_data['verification_token']
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -213,7 +213,7 @@ class PasswordResetViewTest(TestCase):
         del self.request_data['password']
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -231,7 +231,7 @@ class PasswordResetViewTest(TestCase):
         self.request_data['password'] = 'new'
 
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )
@@ -246,7 +246,7 @@ class PasswordResetViewTest(TestCase):
         password reset is saved in the database and hashed.
         """
         response = self.client.post(
-            path=reverse('password-reset'),
+            path=reverse('password_reset'),
             data=self.request_data,
             content_type='application/json'
         )

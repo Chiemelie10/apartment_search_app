@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from user.serializers import UserSerializer
+from user.models import UserProfile
 
 
 User = get_user_model()
@@ -33,24 +34,41 @@ class SignUpView(APIView):
             validated_data['is_active'] = True
 
     def post(self, request):
-        """This method creates a new user instance and saves it to the database."""
+        """
+        This method is used to register new users.\n
+        Returns:\n
+            On success: It returns a http status code of 200 with the user's newly created data.\n
+            On failure: It returns an error message with a corresponding http status code.
+        """
+        # pylint: disable=no-member
+
+        # Enforce the Content-Type of the request to be in application/json format.
         if request.content_type != 'application/json':
             return Response({'error': 'Content-Type must be application/json.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+        # Validate data in request body and return error messages if exception is raised.
         serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if serializer.is_valid():
-            validated_data = serializer.validated_data
-            self.crosscheck_validated_data(validated_data)
-            password = validated_data.pop('password')
-            email = validated_data.pop('email')
-            username = validated_data.pop('username')
+        # Perform further validation checks on  validated data.
+        validated_data = serializer.validated_data
+        self.crosscheck_validated_data(validated_data)
 
-            user = User.objects.create_user(password=password, email=email,
-                                            username=username, **validated_data)
+        # Remove and take note of the values for password, email and username.
+        password = validated_data.pop('password')
+        email = validated_data.pop('email')
+        username = validated_data.pop('username')
 
-            serializer = UserSerializer(user)
+        # Create the user and save to the database.
+        user = User.objects.create_user(password=password, email=email,
+                                        username=username, **validated_data)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Create the profile for the user
+        UserProfile.objects.create(user=user)
+
+        # Serialize the data of the user
+        serializer = UserSerializer(user)
+
+        # Return a response to the client.
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
