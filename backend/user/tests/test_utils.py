@@ -1,6 +1,7 @@
 """This module defines class UtilsFuntionsTest"""
 import time
-from django.utils import timezone
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.test import TestCase
 from django.core import mail
 from django.contrib.auth import get_user_model
@@ -9,8 +10,8 @@ from user.utils import (
     token_generator,
     send_verification_token,
     is_token_expired,
-    is_otp_submission_time_expired,
-    check_html_tags
+    check_html_tags,
+    blacklist_outstanding_tokens
 )
 
 
@@ -83,7 +84,6 @@ class UtilsFunctionsTest(TestCase):
         self.assertFalse(token.is_for_password_reset)
         self.assertFalse(token.is_used)
         self.assertFalse(token.is_validated_for_password_reset)
-        self.assertEqual(token.otp_submission_time, None)
         self.assertEqual(len(token.verification_token), 7)
         self.assertIn(token.verification_token, mail.outbox[0].body)
 
@@ -106,32 +106,6 @@ class UtilsFunctionsTest(TestCase):
         token.verification_token = second_otp
         token.save()
         token_expired = is_token_expired(token, 2)
-        self.assertEqual(token_expired, False)
-
-    def test_is_otp_submission_time_expired(self):
-        """
-        This method tests the 'is_otp_submission_time_expired' function. It
-        returns True if the difference in time, from when a password-reset token
-        was validated, exceeds the provided "expiry_time_length". It returns False
-        when it has not exceeded.
-        '"""
-        # pylint: disable=no-member
-
-        user = UtilsFunctionsTest.user
-
-        otp = token_generator()
-        token = VerificationToken.objects.create(user=user, verification_token=otp)
-        token.otp_submission_time = timezone.now()
-        token.save()
-        time.sleep(3)
-        token_expired = is_otp_submission_time_expired(token, 2)
-        self.assertEqual(token_expired, True)
-
-        second_otp = token_generator()
-        token.verification_token = second_otp
-        token.otp_submission_time = timezone.now()
-        token.save()
-        token_expired = is_otp_submission_time_expired(token, 2)
         self.assertEqual(token_expired, False)
 
     def test_check_html_tag(self):
@@ -172,3 +146,23 @@ class UtilsFunctionsTest(TestCase):
 
         html_tag_in_str, _ = check_html_tags('<#>password<#>')
         self.assertEqual(html_tag_in_str, False)
+
+    def test_blacklist_outstanding_tokens(self):
+        """
+        This method tests that the function blacklists all jwt
+        refresh tokens belonging to a user.
+        """
+        # pylint: disable=no-member
+
+        user = UtilsFunctionsTest.user
+
+        for _ in range(0, 3):
+            RefreshToken.for_user(user)
+
+        outstanding_tokens = OutstandingToken.objects.filter(user=user)
+
+        self.assertEqual(len(outstanding_tokens), 3)
+        self.assertEqual(len(BlacklistedToken.objects.all()), 0)
+
+        blacklist_outstanding_tokens(user=user)
+        self.assertEqual(len(BlacklistedToken.objects.all()), 3)

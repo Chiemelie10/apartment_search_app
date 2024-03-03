@@ -13,6 +13,8 @@ from user.utils import (
 )
 
 
+User = get_user_model()
+
 class CustomTokenRefreshView(APIView):
     """This class defines a method that refreshes an access token."""
 
@@ -37,7 +39,7 @@ class CustomTokenRefreshView(APIView):
         if not refresh_token:
             return Response(
                 {'error': 'Refresh token must be set in the cookie.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
         # Verify signature of token.
@@ -56,7 +58,6 @@ class CustomTokenRefreshView(APIView):
 
         # Get user object
         try:
-            User = get_user_model()
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)

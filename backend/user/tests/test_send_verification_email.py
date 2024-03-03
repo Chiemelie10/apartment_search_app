@@ -31,6 +31,17 @@ class SendVerificationEmailTest(TestCase):
             content_type="application/json"
         )
 
+        response = self.client.post(
+            path=reverse('login_user'),
+            data={
+                'username': 'test_user',
+                'password': 'password'
+            },
+            content_type='application/json'
+        )
+
+        self.access_token = response.json().get('access')
+        self.headers = {'Authorization': f'Bearer {self.access_token}'}
         self.user = User.objects.get(username='test_user')
 
     def test_send_email(self):
@@ -42,6 +53,7 @@ class SendVerificationEmailTest(TestCase):
 
         response = self.client.get(
             path=reverse('email_verification_token', kwargs={'user_id': user_id}),
+            headers=self.headers
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -62,6 +74,7 @@ class SendVerificationEmailTest(TestCase):
         """
         response = self.client.get(
             path=reverse('email_verification_token', kwargs={'user_id': 'fake_user_id'}),
+            headers=self.headers,
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -79,6 +92,7 @@ class SendVerificationEmailTest(TestCase):
 
         response = self.client.get(
             path=reverse('email_verification_token', kwargs={'user_id': user_id}),
+            headers=self.headers
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -96,6 +110,7 @@ class SendVerificationEmailTest(TestCase):
 
         response = self.client.get(
             path=reverse('email_verification_token', kwargs={'user_id': user_id}),
+            headers=self.headers
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -104,4 +119,3 @@ class SendVerificationEmailTest(TestCase):
         self.assertEqual(token.is_for_password_reset, False)
         self.assertEqual(token.is_used, False)
         self.assertEqual(token.is_validated_for_password_reset, False)
-        self.assertEqual(token.otp_submission_time, None)

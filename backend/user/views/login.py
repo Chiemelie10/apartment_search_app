@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from user.serializers import LoginSerializer
-from user.utils import get_tokens_for_user
+from user.utils import get_tokens_for_user, blacklist_outstanding_tokens
 
 
 class LoginView(APIView):
@@ -68,6 +68,9 @@ class LoginView(APIView):
         user = self.get_request_user(request, validated_data)
         if user is None:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Blacklist all outstanding refresh token for the user
+        blacklist_outstanding_tokens(user)
 
         # Generate access and refresh tokens for user
         tokens = get_tokens_for_user(user)

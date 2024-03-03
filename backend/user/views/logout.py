@@ -32,7 +32,7 @@ class LogoutView(APIView):
         if not refresh_token:
             return Response(
                 {'error': 'Refresh token must be set in the cookie.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
         # Verify signature of refresh token and blacklist it if no error

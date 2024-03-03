@@ -187,4 +187,3 @@ class SendVerificationEmailTest(TestCase):
         self.assertEqual(token.is_for_password_reset, True)
         self.assertEqual(token.is_used, False)
         self.assertEqual(token.is_validated_for_password_reset, False)
-        self.assertEqual(token.otp_submission_time, None)

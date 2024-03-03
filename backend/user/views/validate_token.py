@@ -5,7 +5,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
-from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from user.serializers import VerificationTokenSerializer
 from user.utils import is_token_expired
@@ -141,8 +140,6 @@ class ValidatePasswordResetTokenView(APIView):
 
         # Generate access token for user for password reset
         access_token = AccessToken.for_user(token.user)
-        print(access_token['exp'])
-        print(timezone.now())
 
         # Define the response body that will be returned to the client
         message = 'Token for password reset verified successfully.'

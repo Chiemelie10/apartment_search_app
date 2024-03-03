@@ -1,6 +1,5 @@
 """This module defines class ValidateEmailTokenTest and ValidatePasswordTokenTest"""
 import time
-from datetime import datetime
 from django.test import TestCase
 from django.urls import reverse
 from django.conf import settings
@@ -24,23 +23,41 @@ class ValidateEmailTokenTest(TestCase):
             'password': 'password'
         }
 
+        # Register user
         self.client.post(
             path=reverse('register_user'),
             data=data,
             content_type='application/json'
         )
 
+        # Login user
+        response = self.client.post(
+            path=reverse('login_user'),
+            data={
+                'email': 'test_user@gmail.com',
+                'password': 'password'
+            },
+            content_type='application/json'
+        )
+
+        # Get access token from response and set in the header
+        self.access_token = response.json().get('access')
+        self.headers = {'Authorization': f'Bearer {self.access_token}'}
+
+        # Get user
         self.user = User.objects.get(username='Test_user')
 
+        # Send otp for email verification to user.
         self.client.get(
             path=reverse('email_verification_token', kwargs={'user_id': self.user.id}),
+            headers=self.headers
         )
 
         self.token = self.user.verification_token
         self.request_data = {'verification_token': self.token.verification_token}
 
         # Overide setting for time of expiration of otp
-        settings.OTP_EXP_TIME = 2 # Two seconds
+        settings.OTP_EXP_TIME = 3 # Two seconds
 
     def test_response_for_valid_token(self):
         """
@@ -50,6 +67,7 @@ class ValidateEmailTokenTest(TestCase):
         response = self.client.post(
             path=reverse('verify_email'),
             data=self.request_data,
+            headers=self.headers,
             content_type='application/json'
         )
 
@@ -61,7 +79,6 @@ class ValidateEmailTokenTest(TestCase):
         self.assertEqual(user.verification_token.is_used, True)
         self.assertEqual(user.verification_token.is_for_password_reset, False)
         self.assertEqual(user.verification_token.is_validated_for_password_reset, False)
-        self.assertEqual(user.verification_token.otp_submission_time, None)
 
     def test_response_for_incorrect_token(self):
         """
@@ -71,6 +88,7 @@ class ValidateEmailTokenTest(TestCase):
         response = self.client.post(
             path=reverse('verify_email'),
             data={'verification_token': 154628}, # Invalid or incorrect token
+            headers=self.headers,
             content_type='application/json'
         )
 
@@ -91,6 +109,7 @@ class ValidateEmailTokenTest(TestCase):
         self.client.post(
             path=reverse('verify_email'),
             data=self.request_data,
+            headers=self.headers,
             content_type='application/json'
         )
 
@@ -101,6 +120,7 @@ class ValidateEmailTokenTest(TestCase):
         # Another request to receive otp for email verification by the same user.
         self.client.get(
             path=reverse('email_verification_token', kwargs={'user_id': user.id}),
+            headers=self.headers
         )
 
         # New otp
@@ -112,6 +132,7 @@ class ValidateEmailTokenTest(TestCase):
         response2 = self.client.post(
             path=reverse('verify_email'),
             data=request_data2,
+            headers=self.headers,
             content_type='application/json'
         )
 
@@ -132,6 +153,7 @@ class ValidateEmailTokenTest(TestCase):
         response1 = self.client.post(
             path=reverse('verify_email'),
             data=self.request_data,
+            headers=self.headers,
             content_type='application/json'
         )
 
@@ -158,6 +180,7 @@ class ValidateEmailTokenTest(TestCase):
         response2 = self.client.post(
             path=reverse('verify_email'),
             data=self.request_data,
+            headers=self.headers,
             content_type='application/json'
         )
 
@@ -167,9 +190,30 @@ class ValidateEmailTokenTest(TestCase):
         user2 = User.objects.get(username='Test_user2')
         self.assertEqual(user2.is_verified, False)
 
-    def test_response_for_expired_token(self):
+    def test_response_for_expired_otp(self):
         """
-        This method tests that a http status code of 400 and error message is
+        This method tests that a http status code of 401 and error message is
+        returned if a user submits a valid token after it has expired.
+        """
+        settings.OTP_EXP_TIME = 0
+
+        response = self.client.post(
+            path=reverse('verify_email'),
+            data=self.request_data,
+            headers=self.headers,
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json().get('error'), 'Token has expired.')
+
+        user = User.objects.get(username='test_user')
+        self.assertEqual(user.is_verified, False)
+        self.assertEqual(user.verification_token.is_used, False)
+
+    def test_response_for_expired_access_token(self):
+        """
+        This method tests that a http status code of 401 and error message is
         returned if a user submits a valid token after it has expired.
         """
         time.sleep(3)
@@ -177,11 +221,13 @@ class ValidateEmailTokenTest(TestCase):
         response = self.client.post(
             path=reverse('verify_email'),
             data=self.request_data,
+            headers=self.headers,
             content_type='application/json'
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json().get('error'), 'Token has expired.')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.json().get('messages')[0].get('message'),
+                         'Token is invalid or expired')
 
         user = User.objects.get(username='test_user')
         self.assertEqual(user.is_verified, False)
@@ -197,11 +243,30 @@ class ValidateEmailTokenTest(TestCase):
         response = self.client.post(
             path=reverse('verify_email'),
             data=self.request_data,
+            headers=self.headers,
             content_type='application/json'
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()['verification_token'][0], 'This field is required.')
+
+    def test_response_for_incorrect_access_token(self):
+        """
+        This method tests that a http status code of 401 and an error message
+        is returned when access token is not set or incorrect.
+        """
+        self.headers = {'Authorization': 'Bearer incorrect.access.token'}
+
+        response = self.client.post(
+            path=reverse('verify_email'),
+            data=self.request_data,
+            headers=self.headers,
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.json().get('messages')[0].get('message'),
+                         'Token is invalid or expired')
 
 
 class ValidatePasswordTokenTest(TestCase):
@@ -256,14 +321,14 @@ class ValidatePasswordTokenTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json().get('message'),
                          'Token for password reset verified successfully.')
-        self.assertEqual(response.json().get('verification_token'), self.token.verification_token)
+        access_token = response.cookies['access'].value
+        self.assertNotEqual(access_token, '')
 
         user = User.objects.get(username='test_user')
         self.assertEqual(user.is_verified, False)
         self.assertEqual(user.verification_token.is_used, False)
         self.assertEqual(user.verification_token.is_for_password_reset, True)
         self.assertEqual(user.verification_token.is_validated_for_password_reset, True)
-        self.assertEqual(type(user.verification_token.otp_submission_time), datetime)
 
     def test_response_for_incorrect_token(self):
         """
@@ -284,7 +349,6 @@ class ValidatePasswordTokenTest(TestCase):
         self.assertEqual(user.verification_token.is_used, False)
         self.assertEqual(user.verification_token.is_for_password_reset, True)
         self.assertEqual(user.verification_token.is_validated_for_password_reset, False)
-        self.assertEqual(type(user.verification_token.otp_submission_time), type(None))
 
     def test_response_for_used_token(self):
         """

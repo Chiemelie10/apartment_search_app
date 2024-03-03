@@ -44,7 +44,7 @@ class PasswordResetView(APIView):
         if not access_token:
             return Response(
                 {'error': 'Access token must be set in the cookie.'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
         # Verify signature of refresh token
@@ -92,6 +92,8 @@ class PasswordResetView(APIView):
 
             # Return response to the client.
             message = 'Password reset was successful.'
-            return Response({'message': message}, status=status.HTTP_200_OK)
+            response = Response({'message': message}, status=status.HTTP_200_OK)
+            response.delete_cookie('access')
+            return response
         except User.DoesNotExist:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
