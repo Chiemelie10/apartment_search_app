@@ -57,9 +57,8 @@ class LoginView(APIView):
             On failure: An error message with a corresponding http status
                         code.
         """
-        serializer = LoginSerializer(data=request.data)
-
         # Validate data in request body and return error messages if exception is raised.
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data

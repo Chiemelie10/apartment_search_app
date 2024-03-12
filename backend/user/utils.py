@@ -1,9 +1,13 @@
 """This module defines some helper functions and classes for the user_app app."""
-# import threading
+import os
+from io import BytesIO
 from random import randint
+from PIL import Image, ImageOps
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.template.loader import render_to_string
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
 from django.utils.html import strip_tags
@@ -87,7 +91,11 @@ def get_tokens_for_user(user):
     # pylint: disable=no-member
 
     refresh = RefreshToken.for_user(user)
-    refresh['user_role'] = user.profile.role
+    role = user.profile.role
+    if role is None:
+        refresh['user_role'] = None
+    else:
+        refresh['user_role'] = role.name
 
     return {
         'refresh': str(refresh),
@@ -103,3 +111,49 @@ def blacklist_outstanding_tokens(user):
     if outstanding_tokens.exists():
         for token in outstanding_tokens:
             BlacklistedToken.objects.get_or_create(token=token)
+
+def resize_image(image, new_width):
+    """This method resizes all thumbnail images to a specified size."""
+    # Open the image using pillow
+    img = Image.open(image)
+    img = img.convert('RGB')
+
+    aspect_ratio = img.width / img.height
+
+    if img.width > new_width:
+        # Resize the image while maintaining the aspect ratio
+        new_height = int(new_width / aspect_ratio)
+        resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    else:
+        resized_img = img
+
+    # Enters the EXIF (Exchangeable Image File Format)
+    # data of the image into the resized image.
+    resized_img = ImageOps.exif_transpose(resized_img)
+
+    # Compress image to reduce the file size
+    content_type = image.content_type
+    output_buffer = BytesIO()
+    resized_img.save(output_buffer, format='JPEG', quality=85)
+    output_buffer.seek(0)
+
+    # Create a ContentFile from BytesIO buffer
+    content_file = ContentFile(output_buffer.read())
+
+    # Add extension to image name if image has no extension
+    image_extension = os.path.splitext(image.name)[1]
+    if image_extension == '':
+        image.name = f'{image.name}.jpg'
+
+    # Create an InMemoryUploadFile from the ContentFile
+    resized_file = InMemoryUploadedFile(
+        file=content_file,
+        field_name=None,
+        name=image.name,
+        content_type=content_type,
+        size=content_file.size,
+        charset=None,
+        content_type_extra=None
+    )
+
+    return resized_file

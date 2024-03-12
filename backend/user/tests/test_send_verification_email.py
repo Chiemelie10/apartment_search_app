@@ -49,10 +49,8 @@ class SendVerificationEmailTest(TestCase):
         This method tests that verification token is sent to the
         email address of the user.
         """
-        user_id = self.user.id
-
         response = self.client.get(
-            path=reverse('email_verification_token', kwargs={'user_id': user_id}),
+            path=reverse('email_verification_token'),
             headers=self.headers
         )
 
@@ -66,32 +64,27 @@ class SendVerificationEmailTest(TestCase):
             f'A One Time Password (OTP) has been sent to {self.user.email}.'
         )
 
-    def test_user_not_found(self):
+    def test_user_access_token_not_set(self):
         """
         This methods tests that a 404 http status code and an error
-        message is returned when the provided user_id is incorrect, ie
-        no matching user with that id in the database.
+        message is returned when access token is not set in the header.
         """
         response = self.client.get(
-            path=reverse('email_verification_token', kwargs={'user_id': 'fake_user_id'}),
-            headers=self.headers,
+            path=reverse('email_verification_token'),
         )
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(len(mail.outbox), 0)
-
-        response_data = response.json()
-        self.assertEqual(response_data.get('error'), 'User not found.')
+        self.assertEqual(response.json().get('detail'),
+                         'Authentication credentials were not provided.')
 
     def test_verification_token_in_email(self):
         """
         This method tests that a verification taken is created
         and sent in the body of the email.
         """
-        user_id = self.user.id
-
         response = self.client.get(
-            path=reverse('email_verification_token', kwargs={'user_id': user_id}),
+            path=reverse('email_verification_token'),
             headers=self.headers
         )
 
@@ -106,10 +99,8 @@ class SendVerificationEmailTest(TestCase):
         This method tests that the default values of the created token
         matches the ones set in the SendEmailVerificationToken view.
         """
-        user_id = self.user.id
-
         response = self.client.get(
-            path=reverse('email_verification_token', kwargs={'user_id': user_id}),
+            path=reverse('email_verification_token'),
             headers=self.headers
         )
 

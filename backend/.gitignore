@@ -10,3 +10,4 @@ postgres_database_setup.sql
 .public_key.pem
 .generate_private_public_keys.py
 decode_token.py
+media

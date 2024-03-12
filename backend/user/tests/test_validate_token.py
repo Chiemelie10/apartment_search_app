@@ -49,7 +49,7 @@ class ValidateEmailTokenTest(TestCase):
 
         # Send otp for email verification to user.
         self.client.get(
-            path=reverse('email_verification_token', kwargs={'user_id': self.user.id}),
+            path=reverse('email_verification_token'),
             headers=self.headers
         )
 
@@ -119,7 +119,7 @@ class ValidateEmailTokenTest(TestCase):
 
         # Another request to receive otp for email verification by the same user.
         self.client.get(
-            path=reverse('email_verification_token', kwargs={'user_id': user.id}),
+            path=reverse('email_verification_token'),
             headers=self.headers
         )
 

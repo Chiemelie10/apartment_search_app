@@ -10,7 +10,7 @@ from user.models import UserProfile
 User = get_user_model()
 
 class SignUpView(APIView):
-    """This class defines methods that handles CRUD operations relating to the User model"""
+    """This class defines methods that handles user sign up."""
     serializer_class = UserSerializer
 
     def crosscheck_validated_data(self, validated_data):

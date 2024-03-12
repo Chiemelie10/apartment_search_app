@@ -27,7 +27,7 @@ class SendEmailVerificationToken(APIView):
             }
         }
     )
-    def get(self, request, user_id):
+    def get(self, request):
         """
         This method sends a One Time Password for email verification to the user's email address.\n
         Args:\n
@@ -36,12 +36,14 @@ class SendEmailVerificationToken(APIView):
             On sucess: It returns a http status code of 200 with an appropriate message.\n
             On failure: An error message to the client with a corresponding http status code.
         """
-        # pylint: disable=unused-argument
         # pylint: disable=broad-exception-caught
 
         try:
             # Get the user object through the provided user_id in the url.
-            user = User.objects.get(id=user_id)
+            user = request.user
+            if user.is_anonymous:
+                return Response({'error': 'User must be logged in.'},
+                                status=status.HTTP_401_UNAUTHORIZED)
 
             # Send otp to the email address provided by the user.
             send_verification_token(user)

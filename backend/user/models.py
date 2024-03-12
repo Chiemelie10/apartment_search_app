@@ -75,11 +75,13 @@ class UserProfile(models.Model):
                                 primary_key=True)
     role = models.ForeignKey(UserRole, on_delete=models.SET_NULL, related_name='profiles',
                              blank=True, null=True)
-    interests = models.ManyToManyField(UserInterest, through='UserProfileInterest', blank=True)
+    interests = models.ManyToManyField(UserInterest, through='UserProfileInterest')
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, null=True, blank=True)
+    first_name = models.CharField(max_length=250, null=True, blank=True)
+    last_name = models.CharField(max_length=250, null=True, blank=True)
     phone_number = models.CharField(max_length=14, null=True, blank=True,
                                     validators=[MinLengthValidator(limit_value=11)])
-    profile_photo = models.ImageField(upload_to='profile_photo', blank=True, null=True)
+    thumbnail = models.ImageField(upload_to='thumbnail', blank=True, null=True)
 
     class Meta:
         """ db_table: Name of the table this class creates in the database."""

@@ -10,11 +10,12 @@ from user.views.password_reset import PasswordResetView
 from user.views.login import LoginView
 from user.views.logout import LogoutView
 from user.views.token_refresh import CustomTokenRefreshView
+from user.views.user_profile import UserProfileView
 
 
 urlpatterns = [
     path('api/auth/register', SignUpView.as_view(), name='register_user'),
-    path('api/users/<str:user_id>/mail/email-verification-token',
+    path('api/mail/email-verification-token',
          SendEmailVerificationToken.as_view(), name='email_verification_token'),
     path('api/auth/email-verification-token', ValidateEmailVerificationTokenView.as_view(),
          name='verify_email'),
@@ -27,4 +28,5 @@ urlpatterns = [
     path('api/auth/logout', LogoutView.as_view(), name='logout_user'),
     path('api/token/blacklist', TokenBlacklistView.as_view(), name='token_blacklist'),
     path('api/token/refresh', CustomTokenRefreshView.as_view(), name='custom_token_refresh'),
+    path('api/users/<str:user_id>/profile', UserProfileView.as_view(), name='user_profile'),
 ]
