@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from user.serializers import UserSerializer
-from user.models import UserProfile
 
 
 User = get_user_model()
@@ -64,11 +63,8 @@ class SignUpView(APIView):
         user = User.objects.create_user(password=password, email=email,
                                         username=username, **validated_data)
 
-        # Create the profile for the user
-        UserProfile.objects.create(user=user)
-
         # Serialize the data of the user
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, context={'request': request})
 
         # Return a response to the client.
         return Response(serializer.data, status=status.HTTP_201_CREATED)

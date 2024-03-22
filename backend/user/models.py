@@ -11,6 +11,8 @@ class CustomUserManager(BaseUserManager):
     """This class defines createuser and createsuperuser methods."""
     def create_user(self, username, email, password, **other_fields):
         """This method creates a new user."""
+        # pylint: disable=no-member
+
         if not username:
             raise ValueError('Username is required.')
         if not email:
@@ -22,6 +24,8 @@ class CustomUserManager(BaseUserManager):
         user = self.model(username=username, email=email, password=password, **other_fields)
         user.set_password(password)
         user.save(using=self._db)
+        UserProfile.objects.create(user=user)
+
         return user
 
     def create_superuser(self, username, email, password, **other_fields):

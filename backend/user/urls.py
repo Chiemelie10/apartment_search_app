@@ -11,6 +11,7 @@ from user.views.login import LoginView
 from user.views.logout import LogoutView
 from user.views.token_refresh import CustomTokenRefreshView
 from user.views.user_profile import UserProfileView
+from user.views.get_users import UserView
 
 
 urlpatterns = [
@@ -28,5 +29,6 @@ urlpatterns = [
     path('api/auth/logout', LogoutView.as_view(), name='logout_user'),
     path('api/token/blacklist', TokenBlacklistView.as_view(), name='token_blacklist'),
     path('api/token/refresh', CustomTokenRefreshView.as_view(), name='custom_token_refresh'),
+    path('api/users', UserView.as_view(), name='get_users'),
     path('api/users/<str:user_id>/profile', UserProfileView.as_view(), name='user_profile'),
 ]

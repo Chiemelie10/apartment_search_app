@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from user_verification_token.models import VerificationToken
 from user.models import UserProfile, UserProfileInterest
 from user.utils import check_html_tags, resize_image
-from user_interest.models import UserInterest
 from user_role.models import UserRole
 
 
@@ -35,16 +34,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
     # pylint: disable=no-member
     interests = UserProfileInterestSerializer(
-            required=False, many=True, source='userprofileinterest_set'
+            required=True,
+            many=True,
+            source='userprofileinterest_set'
     )
     role = serializers.PrimaryKeyRelatedField(
         required=True,
+        allow_null=True,
         queryset=UserRole.objects.prefetch_related('profiles').all()
     )
-    phone_number = serializers.CharField(required=True)
-    gender = serializers.CharField(required=True)
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=True, allow_null=True)
+    gender = serializers.CharField(required=True, allow_null=True)
+    first_name = serializers.CharField(required=True, allow_null=True)
+    last_name = serializers.CharField(required=True, allow_null=True)
+    thumbnail=serializers.ImageField(required=True, allow_null=True)
+    email=serializers.EmailField(required=False)
 
     class Meta:
         """
@@ -60,34 +64,67 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'interests',
             'thumbnail',
             'first_name',
-            'last_name'
+            'last_name',
+            'email',
         ]
+    def validate_email(self, email):
+        """This method does extra validation on the role field."""
+        try:
+            User.objects.get(email=email)
+            raise serializers.ValidationError('User with the email already exists.')
+        except User.DoesNotExist:
+            return email
+
+    def validate_role(self, role):
+        """This method does extra validation on the role field."""
+        request_method = self.context['request'].method
+
+        if request_method == 'PUT':
+            if role is None or role == '':
+                raise serializers.ValidationError('The field "role" is required.')
+
+        return role
+
+    def validate_gender(self, gender):
+        """This method does extra validation on the role field."""
+        request_method = self.context['request'].method
+
+        if request_method == 'PUT':
+            if gender is None or gender == '':
+                raise serializers.ValidationError('The field "gender" is required.')
+
+        return gender
 
     def validate_interests(self, interests):
         """This method does extra validation on the phone_number field."""
-        # pylint: disable=no-member
-
         if len(interests) > 0:
             validated_interests = []
             for interest in interests:
                 user_interest = interest['user_interest']
-                try:
-                    user_interest = UserInterest.objects.get(pk=user_interest.id)
-                    validated_interests.append(user_interest)
-                except UserInterest.DoesNotExist as error:
-                    raise error
+                validated_interests.append(user_interest)
         return validated_interests
 
     def validate_phone_number(self, phone_number):
         """This method does extra validation on the phone_number field."""
-        if phone_number is None or phone_number == '':
-            raise serializers.ValidationError('Phone number is required.')
+        request_method = self.context['request'].method
+
+        if request_method == 'PUT':
+            if phone_number is None or phone_number == '':
+                raise serializers.ValidationError('The field "phone_number" is required.')
+
+        if phone_number is None:
+            return None
 
         # Check for html tags in submitted phone number.
         is_html_in_value, validated_value = check_html_tags(phone_number)
 
         if is_html_in_value is True:
             raise serializers.ValidationError('html tags or anything similar is not allowed.')
+
+        if validated_value.isdigit() is False:
+            raise serializers.ValidationError(
+                'Only numbers must be used.'
+            )
 
         if len(validated_value) < 11 or len(validated_value) == 12 or len(validated_value) > 14:
             raise serializers.ValidationError(
@@ -145,6 +182,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def validate_first_name(self, first_name):
         """This method does extra validation on the first name field."""
+        request_method = self.context['request'].method
+
+        if request_method == 'PUT':
+            if first_name is None or first_name == '':
+                raise serializers.ValidationError('The field "first_name" is required.')
+
+        if first_name is None:
+            return first_name
+
         is_html_in_value, validated_value = check_html_tags(first_name)
 
         if is_html_in_value is True:
@@ -159,6 +205,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def validate_last_name(self, last_name):
         """This method does extra validation on the last name field."""
+        request_method = self.context['request'].method
+
+        if request_method == 'PUT':
+            if last_name is None or last_name == '':
+                raise serializers.ValidationError('The field "last_name" is required.')
+
+        if last_name is None:
+            return None
+
         is_html_in_value, validated_value = check_html_tags(last_name)
 
         if is_html_in_value is True:
@@ -173,8 +228,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def validate_thumbnail(self, thumbnail):
         """This method does extra validation on the last name field."""
+        request_method = self.context['request'].method
+
+        if request_method == 'PUT':
+            if thumbnail is None or thumbnail == '':
+                raise serializers.ValidationError('The field "thumbnail" is required.')
+
         if thumbnail is None:
-            return None
+            return thumbnail
 
         allowed_mimetypes = ['image/jpeg']
 
@@ -204,6 +265,45 @@ class UserSerializer(serializers.ModelSerializer):
         """
         model = User
         fields = '__all__'
+
+    def to_representation(self, instance):
+        """
+        This method is overridden to define data that is returned when
+        object is serialized using the UserSerializer.
+        """
+        data = super().to_representation(instance)
+
+        # Check if current user is the owner of the profile
+        user = self.context['request'].user
+        if user != instance and user.is_staff is False and user.is_authenticated is True:
+            excluded_fields = [
+                'email',
+                'id',
+                'is_superuser',
+                'is_staff',
+                'is_active',
+                'is_verified',
+                'created_at',
+                'updated_at',
+                'last_login',
+                'groups',
+                'user_permissions',
+                'phone_number',
+                'first_name',
+                'last_name',
+                'role'
+            ]
+            for field in excluded_fields:
+                if field in (
+                    'id', 'email', 'is_superuser', 'is_staff',
+                    'is_active', 'is_verified', 'created_at',
+                    'updated_at', 'last_login', 'groups', 'user_permissions'
+                ):
+                    data.pop(field, None)
+                else:
+                    data['profile_information'].pop(field, None)
+
+        return data
 
     def validate_password(self, value):
         """This method does extra validation on the password field."""
