@@ -1,5 +1,6 @@
 """This module defines class SignUpViewTest"""
 from rest_framework import status
+from rest_framework.request import Request
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -32,8 +33,11 @@ class SignUpViewTest(TestCase):
             content_type="application/json"
         )
 
+        # Create a mock request object
+        request = Request(response.wsgi_request)
+
         user = User.objects.get(username="test_user")
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, context={'request': request})
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json(), serializer.data)

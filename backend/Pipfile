@@ -14,6 +14,7 @@ python-dotenv = "*"
 psycopg = "*"
 coverage = "*"
 djangorestframework-simplejwt = {version = "*", extras = ["crypto"]}
+humanize = "*"
 
 [dev-packages]
 

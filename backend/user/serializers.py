@@ -7,6 +7,7 @@ from user_verification_token.models import VerificationToken
 from user.models import UserProfile, UserProfileInterest
 from user.utils import check_html_tags, resize_image
 from user_role.models import UserRole
+from user_suspension.models import UserSuspension
 
 
 User = get_user_model()
@@ -414,5 +415,94 @@ class LoginSerializer(serializers.Serializer):
 
         if not password:
             raise serializers.ValidationError('Password is required.')
+
+        return attrs
+
+
+class TokenBlacklistSerializer(serializers.ModelSerializer):
+    """
+    This class lists the class attributes that will be
+    validated in the TokenBlacklistView.
+    """
+    # user = serializers.CharField(required=True)
+    # duration = serializers.IntegerField(default=None, allow_null=True)
+    # is_permanent = serializers.BooleanField(default=False)
+    # has_ended = serializers.BooleanField(default=False)
+
+    user = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=User.objects.all()
+    )
+    is_permanent = serializers.BooleanField(required=False)
+    has_ended = serializers.BooleanField(required=False)
+    duration = serializers.IntegerField(required=True, allow_null=True)
+
+    class Meta:
+        """
+            model: Name of the model
+            fields: The class attributes of the above name model
+                    to be validated
+        """
+        model = UserSuspension
+        fields = ['user', 'is_permanent', 'duration', 'has_ended']
+
+    def to_representation(self, instance):
+        """
+        This method is overridden to define data that is returned when
+        object is serialized using the TokenBlacklistSerializer.
+        """
+        data = super().to_representation(instance)
+        data['start_time'] = instance.start_time
+        data['end_time'] = instance.end_time
+        data['number_of_suspensions'] = instance.number_of_suspensions
+        return data
+
+    def validate(self, attrs):
+        """
+        This method validates the request and returns the
+        value of the attrs in the request.
+        """
+        is_permanent = attrs.get('is_permanent')
+        duration = attrs.get('duration')
+        has_ended = attrs.get('has_ended')
+
+        if 'user' not in attrs.keys():
+            raise serializers.ValidationError('The field "user" is required.')
+
+        if 'has_ended' in attrs.keys():
+            if 'is_permanent' in attrs.keys() or 'duration' in attrs.keys():
+                raise serializers.ValidationError(
+                    'The field "is_permanent" and/or "duration" should not be included '\
+                    'in the request body when the field "has_ended" has been included.'
+                )
+
+        if is_permanent is False and duration is None:
+            raise serializers.ValidationError(
+                'The field "duration" is required when is_permanent is False.'
+            )
+
+        if is_permanent is True and duration is not None:
+            raise serializers.ValidationError(
+                'The field "duration" should not be set when is_permanent is True.'
+            )
+
+        if has_ended is True and duration is not None:
+            return serializers.ValidationError(
+                'The "has_ended" field should not be set to true when the field "duration" '\
+                'is set. Remove it from the request or set it to false.'
+            )
+
+        if has_ended is True and is_permanent is True:
+            return serializers.ValidationError(
+                'The "has_ended" field should not be set to true when the field "is_permanent" '\
+                'is also set to True. Remove it from the request or set it to false.'
+            )
+
+        if duration is not None:
+            if duration < 1:
+                raise serializers.ValidationError('Duration cannot be less than one hour.')
+
+            if (duration % 1) != 0:
+                raise serializers.ValidationError('Duration must be a whole number.')
 
         return attrs

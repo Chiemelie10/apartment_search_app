@@ -2,7 +2,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
-from user.models import UserProfile
 
 
 User = get_user_model()
@@ -140,5 +139,5 @@ class UserModelTest(TestCase):
         # pylint: disable=no-member
 
         user = User.objects.get(username="test_user")
-        user_profile = UserProfile.objects.create(user=user, phone_number='07058679688')
+        user_profile = user.profile
         self.assertEqual(f'{user.id} {user.username}', str(user_profile))

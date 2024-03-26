@@ -22,7 +22,6 @@ class CustomTokenRefreshView(APIView):
         request=None,
         responses={200: {'example': {'access': 'access_token_value'}}}
     )
-
     def post(self, request):
         """
         This method uses refresh token from the cookie to generate new

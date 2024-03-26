@@ -1,7 +1,9 @@
 """This module defines class LoginView"""
+import humanize
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import authenticate
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -67,6 +69,41 @@ class LoginView(APIView):
         user = self.get_request_user(request, validated_data)
         if user is None:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if user is not active
+        if user.is_active is False:
+            # Check if the reason for being inactive is due to suspension
+            try:
+                current_time = timezone.now()
+                end_time = user.suspension.end_time
+                if end_time is not None:
+                    # Prevent user from logging in if suspension endtime
+                    # has not been equaled or exceeded.
+                    if current_time < end_time:
+                        time_difference = end_time - current_time
+                        readable_time_difference = humanize.naturaldelta(time_difference)
+                        return Response(
+                            {
+                                'error': f'Account was suspended, '
+                                         f'time remaining is {readable_time_difference}'
+                            },
+                            status=status.HTTP_403_FORBIDDEN
+                        )
+                    # End user suspension and set user to active
+                    user.suspension.has_ended = True
+                    user.suspension.save()
+                    user.is_active = True
+
+                # Prevent user from logging in if account is permanently suspended.
+                if user.suspension.is_permanent is True and user.suspension.has_ended is False:
+                    return Response(
+                        {
+                            'error': 'Account has been permanently suspended.'
+                        },
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            except ObjectDoesNotExist:
+                pass
 
         # Blacklist all outstanding refresh token for the user
         blacklist_outstanding_tokens(user)
