@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class LogoutViewTest(TestCase):
-    """This class defines methods that tests LogoutViewTest class."""
+    """This class defines methods that tests LogoutView class."""
     def setUp(self):
         """
         This method is called before the start of each method of the class

@@ -1,6 +1,7 @@
 """This module defines class UserProfileView"""
 from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import status
@@ -83,6 +84,18 @@ class UserProfileView(APIView):
 
         try:
             user = User.objects.get(pk=user_id)
+            if user != request.user and user.is_staff is False:
+                try:
+                    has_ended = user.suspension.has_ended
+                    if has_ended is False:
+                        return Response(
+                            {
+                                'error': 'This account is suspended.'
+                            },
+                            status=status.HTTP_403_FORBIDDEN
+                        )
+                except ObjectDoesNotExist:
+                    pass
             serializer = UserSerializer(user, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
@@ -105,8 +118,8 @@ class UserProfileView(APIView):
         # compare user making the request to user that owns the profile to be viewed.
         user = request.user
         if user.id != user_id:
-            return Response({'error': 'User profile can only be updated by the owner.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Profile can only be updated by the owner.'},
+                            status=status.HTTP_403_FORBIDDEN)
 
         # Validate data in request body and return error messages if exception is raised.
         serializer = UserProfileSerializer(data=request.data, context={'request': request})
@@ -174,8 +187,8 @@ class UserProfileView(APIView):
         # compare user making the request to user that owns the profile to be viewed.
         user = request.user
         if user.id != user_id:
-            return Response({'error': 'User profile data can only be updated by the owner.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Profile can only be updated by the owner.'},
+                            status=status.HTTP_403_FORBIDDEN)
 
         # Validate data in request body and return error messages if exception is raised.
         serializer = UserProfileSerializer(
@@ -310,7 +323,7 @@ class UserProfileView(APIView):
         user = request.user
         if user.id != user_id:
             return Response({'error': 'Account can only be deleted by the owner.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+                            status=status.HTTP_403_FORBIDDEN)
 
         # Get refresh token from cookie.
         refresh_token = request.COOKIES.get('refresh')

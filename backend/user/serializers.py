@@ -229,12 +229,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def validate_thumbnail(self, thumbnail):
         """This method does extra validation on the last name field."""
-        request_method = self.context['request'].method
-
-        if request_method == 'PUT':
-            if thumbnail is None or thumbnail == '':
-                raise serializers.ValidationError('The field "thumbnail" is required.')
-
         if thumbnail is None:
             return thumbnail
 
@@ -462,18 +456,27 @@ class TokenBlacklistSerializer(serializers.ModelSerializer):
         This method validates the request and returns the
         value of the attrs in the request.
         """
+        # Get request method
+        method = self.context['request'].method
+
         is_permanent = attrs.get('is_permanent')
         duration = attrs.get('duration')
         has_ended = attrs.get('has_ended')
 
+        if method == 'POST' and has_ended is True:
+            raise serializers.ValidationError(
+                'The "has_ended" field should not be set to true in a post request. '\
+                'Remove it from the request or set it to false.'
+            )
+
         if 'user' not in attrs.keys():
             raise serializers.ValidationError('The field "user" is required.')
 
-        if 'has_ended' in attrs.keys():
+        if has_ended is True:
             if 'is_permanent' in attrs.keys() or 'duration' in attrs.keys():
                 raise serializers.ValidationError(
                     'The field "is_permanent" and/or "duration" should not be included '\
-                    'in the request body when the field "has_ended" has been included.'
+                    'in the request body when the field "has_ended" is set to true.'
                 )
 
         if is_permanent is False and duration is None:

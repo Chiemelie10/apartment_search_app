@@ -1,9 +1,13 @@
 """This module defines class LoginViewTest"""
+import time
+from datetime import timedelta
 from rest_framework import status
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib.auth import get_user_model
+from user_suspension.models import UserSuspension
 
 
 User = get_user_model()
@@ -164,3 +168,69 @@ class LoginViewTest(TestCase):
 
         blacklisted_token = BlacklistedToken.objects.all()
         self.assertEqual(len(blacklisted_token), 2)
+
+    def test_suspended_user_login_response(self):
+        """
+        This method tests that that suspended users are unable to login.
+        It also tests the users are able to login after their suspension ends.
+        """
+        # pylint: disable=no-member
+
+        # Get user
+        user = User.objects.get(username='test_user')
+
+        # Suspend user permanently
+        UserSuspension.objects.create(
+            user=user,
+            is_permanent=True,
+            duration=None,
+            start_time=timezone.now(),
+            end_time=None,
+            number_of_suspensions=1
+        )
+
+        # Set is_active attribute of the user to False after suspendin the user
+        user.is_active = False
+        user.save()
+
+        # Test response after user tries to login
+        response = self.client.post(
+            path=reverse('login_user'),
+            data=self.login_data,
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.json().get('error'), 'Account has been permanently suspended.')
+
+        # User is suspended for 2 seconds
+        user.suspension.is_permanent = False
+        user.suspension.duration = 1
+        user.suspension.start_time = timezone.now()
+        user.suspension.end_time = timezone.now() + timedelta(seconds=2)
+        user.suspension.number_of_suspensions = 2
+        user.suspension.save()
+
+        # Test response after user tries to login before 2 seconds expires.
+        response = self.client.post(
+            path=reverse('login_user'),
+            data=self.login_data,
+            content_type='application/json'
+        )
+        self.assertEqual(response.json().get('error'), 'Account was suspended, '\
+                         'time remaining is a second.')
+
+        # 3 seconds passes
+        time.sleep(3)
+
+        # Test response after user tries to login after 2 seconds passes.
+        response = self.client.post(
+            path=reverse('login_user'),
+            data=self.login_data,
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json().get('message'), 'User login was successful.')
+
+        # Test user is_active attribute after login
+        user = User.objects.get(username='test_user')
+        self.assertEqual(user.is_active, True)

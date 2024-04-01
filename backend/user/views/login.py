@@ -85,7 +85,7 @@ class LoginView(APIView):
                         return Response(
                             {
                                 'error': f'Account was suspended, '
-                                         f'time remaining is {readable_time_difference}'
+                                         f'time remaining is {readable_time_difference}.'
                             },
                             status=status.HTTP_403_FORBIDDEN
                         )

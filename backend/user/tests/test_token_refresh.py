@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class TokenRefreshTest(TestCase):
-    """This class defines methods that tests LogoutViewTest class."""
+    """This class defines methods that tests CustomTokenRefreshView class."""
 
     def setUp(self):
         """
