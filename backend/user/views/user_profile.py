@@ -155,7 +155,6 @@ class UserProfileView(APIView):
         # Set updated profile
         user.profile.role = role
         user.profile.gender = gender
-        # user_profile.interests = interests
         user.profile.phone_number = phone_number
         user.profile.first_name = first_name
         user.profile.last_name = last_name
@@ -309,7 +308,7 @@ class UserProfileView(APIView):
 
     @extend_schema(
         request=None,
-        responses={200: UserSerializer}
+        responses={204: None}
     )
     def delete(self, request, user_id):
         """
@@ -317,7 +316,7 @@ class UserProfileView(APIView):
         Args:\n
             user_id: The id of the user that the data will be deleted.\n
         Returns:\n
-            On success: Http status code of 200 and message.\n
+            On success: Http status code of 204 with no response in the body.\n
             On failure: Appropriate http status code and error message.
         """
         user = request.user
@@ -338,6 +337,6 @@ class UserProfileView(APIView):
             decoded_token = RefreshToken(refresh_token)
             decoded_token.blacklist()
             user.delete()
-            return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except TokenError as e:
             return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)

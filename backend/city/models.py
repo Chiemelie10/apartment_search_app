@@ -1,16 +1,17 @@
-"""This module defines class UserInterest."""
+"""This module defines class City"""
 from django.db import models
+from state.models import State
 
-
-class UserInterest(models.Model):
-    """This class defines fields of the model in the database."""
+class City(models.Model):
+    """This class defines the fields of the cities table in the database."""
+    state = models.ForeignKey(State, on_delete=models.CASCADE, related_name='cities')
     name = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         """ db_table: Name of the table this class creates in the database."""
-        db_table = 'user_interests'
+        db_table = 'cities'
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""

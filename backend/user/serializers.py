@@ -22,8 +22,7 @@ class UserProfileInterestSerializer(serializers.ModelSerializer):
     class Meta:
         """
             model: Name of the model
-            fields: The class attributes of the above name model
-                    to be validated
+            fields: The class attributes of the name model to be validated or serialized.
         """
         model = UserProfileInterest
         fields = '__all__'
@@ -97,7 +96,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return gender
 
     def validate_interests(self, interests):
-        """This method does extra validation on the phone_number field."""
+        """This method converts interests from a list of dictionary to a list."""
         if len(interests) > 0:
             validated_interests = []
             for interest in interests:
@@ -228,7 +227,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return validated_value
 
     def validate_thumbnail(self, thumbnail):
-        """This method does extra validation on the last name field."""
+        """This method does extra validation on the thumbnail field."""
         if thumbnail is None:
             return thumbnail
 

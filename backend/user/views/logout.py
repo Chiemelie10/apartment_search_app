@@ -16,13 +16,19 @@ class LogoutView(APIView):
     # request and response schema for drf_spectacular
     @extend_schema(
         request=None,
-        responses={204: None}
+        responses={
+            200: {
+                'example': {
+                    'message': 'User logout was successful.',
+                }
+            }
+        }
     )
     def post(self, request):
         """
         This method logs a user out of the application.\n
         Returns:\n
-                On sucess: Http status code of 204 with no data in the response body.\n
+                On sucess: Http status code of 200 and success message in response body.\n
                 On failure: An error message with an appropriate http status code.
         """
         # pylint: disable=broad-exception-caught
@@ -39,6 +45,6 @@ class LogoutView(APIView):
         try:
             decoded_token = RefreshToken(refresh_token)
             decoded_token.blacklist()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'User logout was successful.'}, status=status.HTTP_200_OK)
         except TokenError as e:
             return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)

@@ -52,7 +52,7 @@ class LoginView(APIView):
     )
     def post(self, request):
         """
-        This class defines a method that logs a user into the application.\n
+        This method logs a user into the application.\n
         Returns:\n
             On success: A jwt access token in the body of the response and a jwt
                         refresh token set in the cookie.\n
