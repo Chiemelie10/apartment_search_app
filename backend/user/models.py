@@ -61,8 +61,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email']
 
     class Meta:
-        """ db_table: Name of the table this class creates in the database."""
+        """
+        db_table: Name of the table this class creates in the database.
+        ordering: The order the instances of this model is displayed on the admin page.
+        """
         db_table = 'users'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""
@@ -86,10 +90,16 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=14, null=True, blank=True,
                                     validators=[MinLengthValidator(limit_value=11)])
     thumbnail = models.ImageField(upload_to='thumbnail', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """ db_table: Name of the table this class creates in the database."""
+        """
+        db_table: Name of the table this class creates in the database.
+        ordering: The order the instances of this model is displayed on the admin page.
+        """
         db_table = 'user_profiles'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""
@@ -104,10 +114,16 @@ class UserProfileInterest(models.Model):
     """
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     user_interest = models.ForeignKey(UserInterest, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """ db_table: Name of the table this class creates in the database."""
+        """
+        db_table: Name of the table this class creates in the database.
+        ordering: The order the instances of this model is displayed on the admin page.
+        """
         db_table = 'user_profile_interests'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""

@@ -58,8 +58,12 @@ class Apartment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """ db_table: Name of the table this class creates in the database."""
+        """
+        db_table: Name of the table this class creates in the database.
+        ordering: The order the instances of this model is displayed on the admin page.
+        """
         db_table = 'apartments'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""
@@ -73,10 +77,19 @@ class ApartmentAmenity(models.Model):
     """
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """ db_table: Name of the table this class creates in the database."""
+        """
+        db_table: Name of the table this class creates in the database.
+        verbose_name_plural: Plural form of human readable name of the model in the admin page.
+        ordering: The order the instances of this model is displayed on the admin page.
+        """
         db_table = 'apartment_amenties'
+        verbose_name_plural = 'Apartment amenities'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""

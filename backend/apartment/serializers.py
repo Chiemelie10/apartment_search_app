@@ -319,26 +319,32 @@ class ApartmentSerializer(serializers.ModelSerializer):
             amenities = []
 
         for amenity in amenities:
-            value = amenity['amenity']
+            value = amenity.get('amenity')
+            quantity = amenity.get('quantity')
+            if quantity is None:
+                raise serializers.ValidationError(
+                    'The field "quantity" is required.'
+                )
             if value.name.lower() == 'none':
                 if len(amenities) > 1:
                     raise serializers.ValidationError(
                         'There cannot be more than one amenity when "None" is entered.'
                     )
+                if quantity != 0:
+                    raise serializers.ValidationError(
+                        'The value of quantity must be zero when amenity is none.'
+                    )
+            if value.name.lower() != 'none':
+                if quantity <= 0:
+                    raise serializers.ValidationError(
+                        'The value of quantity must be greater than zero when amenity is not none.'
+                    )
 
         # Add none to list of amenities if empty list was submitted.
         if amenities == []:
             amenity = Amenity.objects.get(name='None')
-            amenities.append({'amenity': amenity})
+            amenities.append({'amenity': amenity, 'quantity': 0})
 
-        # Convert from list of dictionaries to a list
-        if len(amenities) > 0:
-            validated_amenities = []
-            for amenity in amenities:
-                amenity = amenity['amenity']
-                validated_amenities.append(amenity)
-
-            return validated_amenities
         return amenities
 
     def validate_title(self, title):

@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema
 from user.serializers import UserSerializer
 
 
@@ -32,6 +33,9 @@ class SignUpView(APIView):
         if is_active is False:
             validated_data['is_active'] = True
 
+    @extend_schema(
+        responses={201: UserSerializer}
+    )
     def post(self, request):
         """
         This method is used to register new users.\n

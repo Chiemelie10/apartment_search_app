@@ -38,24 +38,26 @@ class UserProfileView(APIView):
                 user_profile=user.profile
             )
             if user_profile_interests.exists():
-                # Get the name of user_interest object from user_profile_interest object
-                # and add to a list.
-                user_profile_interest_names = []
-                for user_profile_interest in user_profile_interests:
-                    user_profile_interest_names.append(user_profile_interest.user_interest.name)
+                # Add to the database the submitted user_interests that are not in the list
+                # user_profile_interests.
+                # Also converts from list of dictionaries to a list of user_interest objects.
+                user_interest_obj_list = []
+                for user_interest in user_interests:
+                    user_interest_obj = user_interest['user_interest']
+                    user_interest_obj_list.append(user_interest_obj)
+                    if user_interest_obj not in user_profile_interests:
+                        user.profile.interests.add(user_interest_obj)
 
-                # Add user interest that is not in the list of user_profile_interest_names
-                # from database and remove user interests that are in the same list.
-                for user_interest in user_interests:
-                    if user_interest.name not in user_profile_interest_names:
-                        user.profile.interests.add(user_interest)
-                    else:
-                        user.profile.interests.remove(user_interest)
+                # Delete from the database the user_interests that are not submitted.
+                for user_profile_interest in user_profile_interests:
+                    if user_profile_interest.user_interest not in user_interest_obj_list:
+                        user.profile.interests.remove(user_profile_interest.user_interest)
             else:
-                # Add user interests to user profile when the user has
-                # no previous captured interests.
+                # Add user_interests to a user profile when it has no
+                # previous captured user_interests.
                 for user_interest in user_interests:
-                    user.profile.interests.add(user_interest)
+                    user_interest_obj = user_interest['user_interest']
+                    user.profile.interests.add(user_interest_obj)
 
     def get_prev_thumbnail(self, thumbnail, user):
         """

@@ -89,23 +89,42 @@ def save_apartment_amenities(amenities, apartment):
 
     if amenities is not None:
         # Get all previously saved amenities for the apartment.
-        apartment_amenties = ApartmentAmenity.objects.filter(apartment=apartment)
+        apartment_amenities = ApartmentAmenity.objects.filter(apartment=apartment)
 
-        if apartment_amenties.exists():
+        if apartment_amenities.exists():
             # Add to the database the submitted amenities that are not in the list
-            # of apartment_amenties_names.
+            # of apartment_amenities.
+            # Also converts from list of dictionaries to a list of amenity objects
+            amenity_obj_list = []
             for amenity in amenities:
-                if amenity not in apartment_amenties:
-                    apartment.amenities.add(amenity)
+                amenity_obj = amenity['amenity']
+                quanity = amenity['quantity']
+                amenity_obj_list.append(amenity_obj)
+                if amenity_obj not in apartment_amenities:
+                    apartment.amenities.add(amenity_obj, through_defaults={'quantity': quanity})
 
             # Delete from the database the amenities that are not submitted.
-            for apartment_amenity in apartment_amenties:
-                if apartment_amenity.amenity not in amenities:
+            for apartment_amenity in apartment_amenities:
+                if apartment_amenity.amenity not in amenity_obj_list:
                     apartment.amenities.remove(apartment_amenity.amenity)
+                else:
+                    for amenity in amenities:
+                        amenity_obj = amenity['amenity']
+                        quanity = amenity['quantity']
+                        if amenity_obj == apartment_amenity.amenity and \
+                            quanity != apartment_amenity.quantity:
+                            apartment_amenity.quantity = quanity
+                            apartment_amenity.save()
+                            break
+                        if amenity_obj == apartment_amenity.amenity and \
+                            quanity == apartment_amenity.quantity:
+                            break
         else:
             # Add amenities to the apartment when it has no previous captured amenities.
             for amenity in amenities:
-                apartment.amenities.add(amenity)
+                amenity_obj = amenity['amenity']
+                quanity = amenity['quantity']
+                apartment.amenities.add(amenity_obj, through_defaults={'quantity': quanity})
 
 def save_apartment_images(images_to_upload, apartment):
     """

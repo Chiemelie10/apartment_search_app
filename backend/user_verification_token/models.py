@@ -16,8 +16,12 @@ class VerificationToken(models.Model):
     created_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """ db_table: Name of the table this class creates in the database."""
+        """
+        db_table: Name of the table this class creates in the database.
+        ordering: The order the instances of this model is displayed on the admin page.
+        """
         db_table = 'verification_tokens'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""
