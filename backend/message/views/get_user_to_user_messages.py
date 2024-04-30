@@ -1,5 +1,5 @@
-"""This module defines class GetUserMessagesView."""
-from django.db.models import Subquery, OuterRef, Q
+"""This module defines class GetUserToUserMessages."""
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.views import APIView
@@ -17,9 +17,9 @@ from apartment.utils import (
 
 User = get_user_model()
 
-class GetUserMessagesView(APIView):
+class GetUserToUserMessages(APIView):
     """
-    This class defines methods that gets a user's messages from the database.
+    This class defines methods that gets all messages between two users.
     """
     #pylint: disable=no-member
     permission_classes = [IsAuthenticated]
@@ -28,12 +28,15 @@ class GetUserMessagesView(APIView):
     @extend_schema(
         request=None
     )
-    def get(self, request, user_id):
+    def get(self, request, user_id, user2_id):
         """
-        For the user making the request, this method gets only the last message
-        the user sent or received from each user that contacted the user previously.
+        This method gets all messages for the owner of the account
+        (user) had with another user (user2).
         """
         user = request.user
+
+        # Confirm the id of the user making the request is equal to user_id
+        # Return an error response if it is not equal.
         if user.id != user_id:
             return Response(
                 {
@@ -42,19 +45,10 @@ class GetUserMessagesView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        # Get messages between the owner of the account and another user
         messages = Message.objects.filter(
-            id__in=Subquery(
-                User.objects.filter(
-                    Q(sent_messages__receiver=user_id) | Q(received_messages__sender=user_id)
-                ).distinct().annotate(
-                    last_msg=Subquery(
-                        Message.objects.filter(
-                            Q(sender=OuterRef('id'), receiver=user_id) |
-                            Q(receiver=OuterRef('id'), sender=user_id)
-                        ).order_by('-created_at').values_list('id', flat=True)[:1]
-                    )
-                ).values_list('last_msg', flat=True).order_by('-created_at')
-            )
+            Q(sender=user_id, receiver=user2_id) |
+            Q(sender=user2_id, receiver=user_id)
         ).order_by('-created_at')
 
         # Get the values of page and page_size from query string of the request.
@@ -85,8 +79,9 @@ class GetUserMessagesView(APIView):
             page,
             page_size,
             total_pages,
-            url_name='get_user_messages',
-            arg1=user_id
+            url_name='get_user_to_user_messages',
+            arg1=user_id,
+            arg2=user2_id
         )
 
         data = {

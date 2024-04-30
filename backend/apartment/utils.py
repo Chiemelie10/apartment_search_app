@@ -60,31 +60,83 @@ def get_page_and_size(request):
 
     return page, page_size
 
-def get_prev_and_next_page(request, page, page_size, total_pages, url_name):
+def get_prev_and_next_page(
+        request, page, page_size, total_pages,
+        url_name, arg1=None, arg2=None):
     """
     This function returns the value for previous and next page which will be
     added to the json response that will be returned.
     """
-    if page == 1 and page == total_pages:
-        previous_page = None
-        next_page = None
-    elif page == 1 and page < total_pages:
-        previous_page = None
-        next_page = f"https://{get_current_site(request).domain}"\
-                    f"{reverse(url_name)}?page={page + 1}&size={page_size}"
-    if page > 1 and page < total_pages:
-        previous_page = f"https://{get_current_site(request).domain}"\
-                        f"{reverse(url_name)}?page={page - 1}"\
-                        f"&size={page_size}"
-        next_page = f"https://{get_current_site(request).domain}"\
-                    f"{reverse(url_name)}?page={page + 1}&size={page_size}"
-    if page > 1 and page == total_pages:
-        previous_page = f"https://{get_current_site(request).domain}"\
-                        f"{reverse('get_available_apartments')}?page={page - 1}"\
-                        f"&size={page_size}"
-        next_page = None
+    if arg1 is None and arg2 is None:
+        if page == 1 and page == total_pages:
+            previous_page = None
+            next_page = None
+        elif page == 1 and page < total_pages:
+            previous_page = None
+            next_page = f"https://{get_current_site(request).domain}"\
+                        f"{reverse(url_name)}?page={page + 1}&size={page_size}"
+        if page > 1 and page < total_pages:
+            previous_page = f"https://{get_current_site(request).domain}"\
+                            f"{reverse(url_name)}?page={page - 1}"\
+                            f"&size={page_size}"
+            next_page = f"https://{get_current_site(request).domain}"\
+                        f"{reverse(url_name)}?page={page + 1}&size={page_size}"
+        if page > 1 and page == total_pages:
+            previous_page = f"https://{get_current_site(request).domain}"\
+                            f"{reverse(url_name)}?page={page - 1}"\
+                            f"&size={page_size}"
+            next_page = None
 
-    return previous_page, next_page
+        return previous_page, next_page
+
+    if arg1 is not None and arg2 is None:
+        if page == 1 and page == total_pages:
+            previous_page = None
+            next_page = None
+        elif page == 1 and page < total_pages:
+            previous_page = None
+            next_page = f"https://{get_current_site(request).domain}"\
+                        f"{reverse(url_name, kwargs={'user_id': arg1})}?"\
+                        f"page={page + 1}&size={page_size}"
+        if page > 1 and page < total_pages:
+            previous_page = f"https://{get_current_site(request).domain}"\
+                            f"{reverse(url_name, kwargs={'user_id': arg1})}?page={page - 1}"\
+                            f"&size={page_size}"
+            next_page = f"https://{get_current_site(request).domain}"\
+                        f"{reverse(url_name, kwargs={'user_id': arg1})}?"\
+                        f"page={page + 1}&size={page_size}"
+        if page > 1 and page == total_pages:
+            previous_page = f"https://{get_current_site(request).domain}"\
+                            f"{reverse(url_name, kwargs={'user_id': arg1})}?page={page - 1}"\
+                            f"&size={page_size}"
+            next_page = None
+
+        return previous_page, next_page
+
+    if arg1 is not None and arg2 is not None:
+        if page == 1 and page == total_pages:
+            previous_page = None
+            next_page = None
+        elif page == 1 and page < total_pages:
+            previous_page = None
+            next_page = f"https://{get_current_site(request).domain}"\
+                        f"{reverse(url_name, kwargs={'user_id': arg1, 'user2_id': arg2})}?"\
+                        f"page={page + 1}&size={page_size}"
+        if page > 1 and page < total_pages:
+            previous_page = f"https://{get_current_site(request).domain}"\
+                            f"{reverse(url_name, kwargs={'user_id': arg1, 'user2_id': arg2})}"\
+                            f"?page={page - 1}&size={page_size}"
+            next_page = f"https://{get_current_site(request).domain}"\
+                        f"{reverse(url_name, kwargs={'user_id': arg1, 'user2_id': arg2})}?"\
+                        f"page={page + 1}&size={page_size}"
+        if page > 1 and page == total_pages:
+            previous_page = f"https://{get_current_site(request).domain}"\
+                            f"{reverse(url_name, kwargs={'user_id': arg1, 'user2_id': arg2})}"\
+                            f"?page={page - 1}&size={page_size}"
+            next_page = None
+
+        return previous_page, next_page
+
 
 def save_apartment_amenities(amenities, apartment):
     """This function saves a list of submitted amenities for an apartment to the database."""
