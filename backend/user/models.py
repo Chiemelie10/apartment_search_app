@@ -110,6 +110,8 @@ class UserProfileInterest(models.Model):
     This class defines the fields of the junction table between
     user_profiles table and user_interests table.
     """
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     user_interest = models.ForeignKey(UserInterest, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

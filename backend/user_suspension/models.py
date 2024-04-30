@@ -1,4 +1,5 @@
 """This module defines class UserSuspension"""
+from uuid import uuid4
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -7,6 +8,8 @@ User = get_user_model()
 
 class UserSuspension(models.Model):
     """This class defines the fields of the user_suspensions table."""
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='suspension')
     start_time = models.DateTimeField(blank=True)
     end_time = models.DateTimeField(null=True, blank=True)

@@ -1,8 +1,11 @@
 """This module defines class Country"""
+from uuid import uuid4
 from django.db import models
 
 class Country(models.Model):
     """This class defines the fields of the countries table in the database."""
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     name = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

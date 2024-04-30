@@ -1,4 +1,5 @@
 """This module defines class VerificationToken"""
+from uuid import uuid4
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -7,6 +8,8 @@ User = get_user_model()
 
 class VerificationToken(models.Model):
     """This class defines the fields of this class in the database."""
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     verification_token = models.CharField(max_length=6)
     user = models.OneToOneField(User, on_delete=models.CASCADE,
                                 related_name='verification_token')

@@ -1,9 +1,12 @@
 """This module defines class City"""
+from uuid import uuid4
 from django.db import models
 from state.models import State
 
 class City(models.Model):
     """This class defines the fields of the cities table in the database."""
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     state = models.ForeignKey(State, on_delete=models.CASCADE, related_name='cities')
     name = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)

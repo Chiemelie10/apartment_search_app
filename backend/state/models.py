@@ -1,9 +1,12 @@
 """This module defines class State"""
+from uuid import uuid4
 from django.db import models
 from country.models import Country
 
 class State(models.Model):
     """This class defines the fields of the states table in the database."""
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='states')
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)

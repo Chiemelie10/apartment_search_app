@@ -75,6 +75,8 @@ class ApartmentAmenity(models.Model):
     This class defines the fields of the junction table between
     apartments table and amenities table.
     """
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)

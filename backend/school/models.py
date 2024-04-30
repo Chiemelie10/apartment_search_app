@@ -1,4 +1,5 @@
 """This module defines class School"""
+from uuid import uuid4
 from django.db import models
 from city.models import City
 from state.models import State
@@ -6,6 +7,8 @@ from country.models import Country
 
 class School(models.Model):
     """This class defines the fields of the schools table in the database."""
+    id = models.CharField(default=uuid4, max_length=36,
+                          unique=True, primary_key=True, editable=False)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='schools')
     state = models.ForeignKey(State, on_delete=models.CASCADE, related_name='schools')
     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name='schools')
