@@ -33,6 +33,9 @@ def get_page_and_size(request):
     page = request.GET.get('page')
     page_size = request.GET.get('size')
 
+    if page is None and page_size is None:
+        return page, page_size
+
     if page is not None:
         # Raise exception if page is not an int
         try:

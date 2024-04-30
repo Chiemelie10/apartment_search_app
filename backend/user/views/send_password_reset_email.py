@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
-from user.serializers import ForgotPasswordSerializer
+from user.serializers import SendPasswordResetTokenSerializer
 from user.utils import send_verification_token
 
 
@@ -16,7 +16,7 @@ class SendPasswordResetToken(APIView):
     This class defines a post method that helps users get
     a password-reset token.
     """
-    serializer_class = ForgotPasswordSerializer
+    serializer_class = SendPasswordResetTokenSerializer
 
     def get_request_user(self, validated_data):
         """
@@ -66,7 +66,7 @@ class SendPasswordResetToken(APIView):
         # pylint: disable=broad-exception-caught
 
         # Validate data in request body and return error messages if exception is raised.
-        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer = SendPasswordResetTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # Get user object that will be passed into the send_verification_token function.

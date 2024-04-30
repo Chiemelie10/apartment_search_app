@@ -7,7 +7,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from user.serializers import UserProfileSerializer, UserSerializer
@@ -20,7 +20,7 @@ class UserProfileView(APIView):
     """This class defines methods that gets or updates user profile data"""
 
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def save_user_interests(self, validated_data, user):
@@ -59,16 +59,33 @@ class UserProfileView(APIView):
                     user_interest_obj = user_interest['user_interest']
                     user.profile.interests.add(user_interest_obj)
 
-    def get_prev_thumbnail(self, thumbnail, user):
+    def get_thumbnail(self, thumbnail, remove_thumbnail, user):
         """
         This method returns existing thumbnail of the user. It prevents
         the thumbnail from being overwritten with null if the user does not
         submit a thumbnail in the request.
         """
+        if remove_thumbnail is True:
+            # Delete existing thumbnail if new thumbnail in the request
+            existing_thumbnail = user.profile.thumbnail
+            if existing_thumbnail:
+                existing_thumbnail_path = user.profile.thumbnail.path
+                if default_storage.exists(existing_thumbnail_path):
+                    default_storage.delete(existing_thumbnail_path)
+            return None
+
         if thumbnail is None:
-            thumbnail = user.profile.thumbnail
-            if thumbnail is None or thumbnail == '':
+            existing_thumbnail = user.profile.thumbnail
+            if existing_thumbnail is None or existing_thumbnail == '':
                 return None
+            return existing_thumbnail
+
+        # Delete existing thumbnail if new thumbnail in the request
+        existing_thumbnail = user.profile.thumbnail
+        if existing_thumbnail:
+            existing_thumbnail_path = user.profile.thumbnail.path
+            if default_storage.exists(existing_thumbnail_path):
+                default_storage.delete(existing_thumbnail_path)
         return thumbnail
 
     @extend_schema(
@@ -129,39 +146,41 @@ class UserProfileView(APIView):
         validated_data = serializer.validated_data
 
         # Get updated values from validated data
-        role = validated_data.get('role')
         gender = validated_data.get('gender')
         phone_number = validated_data.get('phone_number')
         first_name = validated_data.get('first_name')
         last_name = validated_data.get('last_name')
+        remove_thumbnail = validated_data.get('remove_thumbnail')
         thumbnail = validated_data.get('thumbnail')
-        thumbnail = self.get_prev_thumbnail(thumbnail, user)
+        thumbnail = self.get_thumbnail(thumbnail, remove_thumbnail, user)
 
-        if role:
-            if phone_number is None or gender is None or first_name is None or last_name is None:
+        # Check if user has active Apartment class objects in the database
+        # return a 403 http response if the user does.
+        apartments = user.apartments.filter(
+            is_taken=False,
+            advert_days_left__gt=0,
+            approval_status__in=['accepted', 'pending']
+        )
+        if apartments.exists():
+            if gender is None or phone_number is None or first_name is None or last_name is None:
                 return Response(
                     {
-                        'error': 'Gender, phone number, first name or last name '\
-                            'should not be None when role is not None.'
+                        'error': 'Gender, phone number, first name or last name is '\
+                            'required when a user has active apartment adverts.'
                     },
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_403_FORBIDDEN
                 )
 
-        # Delete existing thumbnail if new thumbnail in the request
-        existing_thumbnail = user.profile.thumbnail
-        if existing_thumbnail:
-            existing_thumbnail_path = user.profile.thumbnail.path
-            if default_storage.exists(existing_thumbnail_path):
-                default_storage.delete(existing_thumbnail_path)
+        # Set phone_number_is_verified to False if phone number has been changed
+        if user.profile.phone_number != phone_number:
+            user.profile.phone_number_is_verified = False
 
         # Set updated profile
-        user.profile.role = role
         user.profile.gender = gender
         user.profile.phone_number = phone_number
         user.profile.first_name = first_name
         user.profile.last_name = last_name
-        if thumbnail is not None:
-            user.profile.thumbnail = thumbnail
+        user.profile.thumbnail = thumbnail
 
         # Save submitted user interests.
         self.save_user_interests(validated_data, user)
@@ -200,94 +219,90 @@ class UserProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        # Update user role if it is in validated data
-        if 'role' in validated_data.keys():
-            role = validated_data.get('role')
-            if role is not None and role.name in ('student', 'agent'):
-                for key, value in validated_data.items():
-                    if key in ('gender', 'first_name', 'last_name', 'phone_number'):
-                        if value is None:
-                            return Response(
-                                {
-                                    'error': f'{key} is required if user role is not '\
-                                        'set to None. Delete user role to set it to None.b'
-                                },
-                                status=status.HTTP_400_BAD_REQUEST
-                            )
-            setattr(user.profile, 'role', role)
+        # Check if user has active Apartment class objects in the database
+        # set has_apartment_ad to True if the user does.
+        has_active_ad = False
+        apartments = user.apartments.filter(
+            is_taken=False,
+            advert_days_left__gt=0,
+            approval_status__in=['accepted', 'pending']
+        )
+        if apartments.exists():
+            has_active_ad = True
 
         # Update gender value if it is in validated data.
         if 'gender' in validated_data.keys():
             gender = validated_data.get('gender')
-            if 'role' not in validated_data.keys():
-                # Ensure gender cannot be deleted if role is student or agent.
-                if gender is None and str(user.profile.role) in ('student', 'agent'):
-                    return Response(
-                        {
-                            'error': 'Gender is required if user role is not set to None. '\
-                                'Delete user role to set it to None.'
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+
+            # Ensure gender cannot be set to None when a user has active apartment advert(s).
+            if has_active_ad is True and gender is None:
+                return Response(
+                    {
+                        'error': 'The field "gender" is required when a user has active '\
+                            'apartment adverts.'
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
             setattr(user.profile, 'gender', gender)
 
         # Update phone number value if it is in validated data.
         if 'phone_number' in validated_data.keys():
             phone_number = validated_data.get('phone_number')
-            if 'role' not in validated_data.keys():
-                # Ensure phone number cannot be deleted if role is student or agent.
-                if phone_number is None and str(user.profile.role) in ('student', 'agent'):
-                    return Response(
-                        {
-                            'error': 'Phone number is required if user role is not '\
-                                'set to None. Delete user role to set it to None.'
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            # Ensure phone number cannot be set to None when a user has
+            # active apartment advert(s).
+            if has_active_ad is True and phone_number is None:
+                return Response(
+                    {
+                        'error': 'The field "phone_number" is required when a user '\
+                            'has active apartment adverts.'
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Set phone_number_is_verified to False if phone number has been changed
+            if user.profile.phone_number != phone_number:
+                setattr(user.profile, 'phone_number_is_verified', False)
             setattr(user.profile, 'phone_number', phone_number)
 
         # Update first name value if it is in validated data.
         if 'first_name' in validated_data.keys():
             first_name = validated_data.get('first_name')
-            if 'role' not in validated_data.keys():
-                # Ensure first name cannot be deleted if role is student or agent.
-                if first_name is None and str(user.profile.role) in ('student', 'agent'):
-                    return Response(
-                        {
-                            'error': 'First name is required if user role is not '\
-                                'set to None. Delete user role to set it to None.'
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            # Ensure first name cannot be set to None when a user has
+            # active apartment advert(s).
+            if has_active_ad is True and first_name is None:
+                return Response(
+                    {
+                        'error': 'The field "first_name" is required when a user '\
+                            'has active apartment adverts.'
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
             setattr(user.profile, 'first_name', first_name)
 
         # Update last name value if it is in validated data.
         if 'last_name' in validated_data.keys():
             last_name = validated_data.get('last_name')
-            if 'role' not in validated_data.keys():
-                # Ensure last name cannot be deleted if role is student or agent.
-                if last_name is None and str(user.profile.role) in ('student', 'agent'):
-                    return Response(
-                        {
-                            'error': 'Last name is required if user role is not '\
-                                'set to None. Delete user role to set it to None.'
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            # Ensure last name cannot be set to None when a user has
+            # active apartment advert(s).
+            if has_active_ad is True and last_name is None:
+                return Response(
+                    {
+                        'error': 'The field "last_name" is required when a user '\
+                            'has active apartment adverts.'
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
             setattr(user.profile, 'last_name', last_name)
 
         # Update thumbnail value if it is in validated data.
         if 'thumbnail' in validated_data.keys():
             thumbnail = validated_data.get('thumbnail')
 
-            # Get existing thumbnail value
-            existing_thumbnail = user.profile.thumbnail
+            remove_thumbnail = False
+            if 'remove_thumbnail' in validated_data.keys():
+                remove_thumbnail = validated_data.get('remove_thumbnail', False)
 
-            # Delete thumbnail image from the server if it exists
-            if existing_thumbnail:
-                existing_thumbnail_path = user.profile.thumbnail.path
-                if default_storage.exists(existing_thumbnail_path):
-                    default_storage.delete(existing_thumbnail_path)
+            thumbnail = self.get_thumbnail(thumbnail, remove_thumbnail, user)
 
             setattr(user.profile, 'thumbnail', thumbnail)
 

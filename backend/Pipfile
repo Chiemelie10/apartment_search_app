@@ -15,6 +15,7 @@ psycopg = "*"
 coverage = "*"
 djangorestframework-simplejwt = {version = "*", extras = ["crypto"]}
 humanize = "*"
+twilio = "*"
 
 [dev-packages]
 

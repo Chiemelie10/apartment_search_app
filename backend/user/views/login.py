@@ -7,9 +7,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
 from user.serializers import LoginSerializer
-from user.utils import get_tokens_for_user, blacklist_outstanding_tokens
+from user.utils import blacklist_outstanding_tokens
 
 
 class LoginView(APIView):
@@ -109,13 +110,9 @@ class LoginView(APIView):
         blacklist_outstanding_tokens(user)
 
         # Generate access and refresh tokens for user
-        tokens = get_tokens_for_user(user)
-        access_token = tokens.get('access')
-        refresh_token = tokens.get('refresh')
-
-        if access_token is None or refresh_token is None:
-            return Response({'error': 'Failed to generate refresh or access token.'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        refresh = RefreshToken.for_user(user)
+        refresh_token = str(refresh)
+        access_token = str(refresh.access_token)
 
         # Update time of user's last login
         user.last_login = timezone.now()

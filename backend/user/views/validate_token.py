@@ -6,8 +6,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
 from drf_spectacular.utils import extend_schema
-from user.serializers import VerificationTokenSerializer
+from user.serializers import VerificationTokenSerializer, ValidatePhoneOTPSerializer
 from user.utils import is_token_expired
+from user.verify_phone_number import check_phone_otp
 from user_verification_token.models import VerificationToken
 
 
@@ -66,7 +67,7 @@ class ValidateEmailVerificationTokenView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         # Check if OTP has expired.
-        token_expired = is_token_expired(token, settings.OTP_EXP_TIME)
+        token_expired = is_token_expired(token, settings.EMAIL_OTP_EXP_TIME)
 
         if token_expired is True:
             return Response({'error': 'Token has expired.'},
@@ -160,3 +161,79 @@ class ValidatePasswordResetTokenView(APIView):
         token.save()
 
         return response
+
+
+class ValidatePhoneVerificationOTP(APIView):
+    """
+    This class defines a method that handles validation of OTP from phones.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = ValidatePhoneOTPSerializer
+
+    # Response schema for drf_spectacular
+    @extend_schema(
+        responses={
+            200: {
+                'example': {
+                    'message': 'Phone number verified successfully.'
+                }
+            }
+        }
+    )
+    def post(self, request):
+        """
+        This method verifies a user's phone number using a One Time Password.\n
+        Returns:\n
+            On sucess: A success message to the client.\n
+            On failure: The reason of failure to the client.
+        """
+        # pylint: disable=no-member
+
+        user = request.user
+
+        # Check if the user has entered a phone number in the profile.
+        phone_number = user.profile.phone_number
+        if phone_number is None:
+            return Response(
+                {
+                    'error':
+                    'Phone number must be entered in the profile.'
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Check if the current phone number of the user has been already verified.
+        is_verified = user.profile.phone_number_is_verified
+        if is_verified is True:
+            return Response(
+                {
+                    'error':
+                    'Phone number has already been verified.'
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Validate data in request body and return error messages if exception is raised.
+        serializer = ValidatePhoneOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Get verification token (string) from validated data.
+        otp = serializer.validated_data.get('otp')
+
+        # Check if otp is valid
+        if check_phone_otp(phone_number, otp):
+            user.profile.phone_number_is_verified = True
+            user.profile.save()
+        else:
+            return Response(
+                {
+                    'error': 
+                    'Phone number verification failed. Ensure OTP was entered correctly.'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Return a success response to the client.
+        message = 'Phone number verified successfully.'
+        return Response({'message': message}, status=status.HTTP_200_OK)

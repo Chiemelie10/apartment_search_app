@@ -78,6 +78,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
             source='apartmentamenity_set',
             allow_null=True
     )
+    price = serializers.IntegerField(min_value=0, required=True)
 
     class Meta:
         """
@@ -299,13 +300,6 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def validate_price(self, price):
-        """This method does extra validation on the price field."""
-        if price < 0:
-            raise serializers.ValidationError('The field "price" cannot be less than zero.')
-
-        return price
-
     def validate_amenities(self, amenities):
         """
         This method validates the list of amenities before converting it
@@ -442,3 +436,121 @@ class ApartmentSerializer(serializers.ModelSerializer):
                     )
                 return image_delete
         return images_id_to_delete
+
+
+class ApartmentSearchSerializer(serializers.ModelSerializer):
+    """This class defines the fields of the Apartment model to be validated and serialized."""
+    # pylint: disable=no-member
+    country = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=Country.objects.prefetch_related('apartments').all()
+    )
+    state = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=State.objects.prefetch_related('apartments').all()
+    )
+    city = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=City.objects.prefetch_related('apartments').all()
+    )
+    school = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=School.objects.prefetch_related('apartments').all()
+    )
+    amenities = ApartmentAmenitySerializer(
+            required=False,
+            many=True,
+            allow_empty=True,
+            source='apartmentamenity_set',
+            allow_null=True
+    )
+    max_price = serializers.IntegerField(min_value=0, allow_null=True, required=False)
+    min_price = serializers.IntegerField(min_value=0, allow_null=True, required=False)
+    listing_type = serializers.CharField(required=False, allow_null=True)
+
+    class Meta:
+        """
+            model: Name of the model
+            fields: The class attributes of the above name model
+                    to be validated
+        """
+        model = Apartment
+        fields = [
+            'country',
+            'state',
+            'city',
+            'amenities',
+            'school',
+            'listing_type',
+            'max_price',
+            'min_price'
+        ]
+
+    def to_representation(self, instance):
+        """
+        This method is overridden to define data that is returned when
+        object is serialized using the UserSerializer.
+        """
+        data = super().to_representation(instance)
+        # Check if current user is the owner of the profile
+        user = self.context['request'].user
+
+        if user.is_staff is True:
+            return data
+
+        if user == instance.user:
+            excluded_fields = [
+                'is_taken_time',
+                'is_taken_number',
+                'advert_exp_time',
+                'num_of_exp_time_extension'
+            ]
+            for field in excluded_fields:
+                data.pop(field, None)
+
+            return data
+
+        if user != instance.user:
+            excluded_fields = [
+                'is_taken_time',
+                'is_taken_number',
+                'advert_exp_time',
+                'num_of_exp_time_extension',
+                'approval_status'
+            ]
+            for field in excluded_fields:
+                data.pop(field, None)
+
+            return data
+
+    def validate(self, attrs):
+        """
+        This method validates the request and returns the value of the attrs in the request.
+        """
+        country = attrs.get('country')
+        state = attrs.get('state')
+        city = attrs.get('city')
+        school = attrs.get('school')
+        listing_type = attrs.get('listing_type')
+        max_price = attrs.get('max_price')
+        min_price = attrs.get('min_price')
+        amenities = attrs.get('apartmentamenity_set')
+
+        if amenities == []:
+            amenities = None
+
+        if country is None and state is None and city is None\
+        and school is None and listing_type is None and max_price is None\
+        and min_price is None and amenities is None:
+            raise serializers.ValidationError(
+                'The fields and values to be seached are required.'
+            )
+
+        if min_price is not None and max_price is None:
+            raise serializers.ValidationError('The field "Max_price" is required.')
+
+        return attrs

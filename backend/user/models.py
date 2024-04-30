@@ -3,7 +3,6 @@ from uuid import uuid4
 from django.db import models
 from django.core.validators import MinLengthValidator
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from user_role.models import UserRole
 from user_interest.models import UserInterest
 
 
@@ -81,14 +80,13 @@ class UserProfile(models.Model):
     """This class defines the additional fields need for a complete user profile."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile',
                                 primary_key=True)
-    role = models.ForeignKey(UserRole, on_delete=models.SET_NULL, related_name='profiles',
-                             blank=True, null=True)
     interests = models.ManyToManyField(UserInterest, through='UserProfileInterest')
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, null=True, blank=True)
     first_name = models.CharField(max_length=250, null=True, blank=True)
     last_name = models.CharField(max_length=250, null=True, blank=True)
     phone_number = models.CharField(max_length=14, null=True, blank=True,
                                     validators=[MinLengthValidator(limit_value=11)])
+    phone_number_is_verified = models.BooleanField(default=False)
     thumbnail = models.ImageField(upload_to='thumbnail', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

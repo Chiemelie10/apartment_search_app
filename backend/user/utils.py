@@ -3,7 +3,6 @@ import os
 from io import BytesIO
 from random import randint
 from PIL import Image, ImageOps
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.template.loader import render_to_string
 from django.core.files.base import ContentFile
@@ -19,7 +18,7 @@ def token_generator():
     # pylint: disable=no-member
 
     while True:
-        new_token = str(randint(1000000, 9999999))
+        new_token = str(randint(100000, 999999))
 
         if not VerificationToken.objects.filter(verification_token=new_token).exists():
             return new_token
@@ -85,22 +84,6 @@ def check_html_tags(value):
     """
     stripped_string = strip_tags(value)
     return value != stripped_string, stripped_string
-
-def get_tokens_for_user(user):
-    """This method generates refresh and access tokens for a user."""
-    # pylint: disable=no-member
-
-    refresh = RefreshToken.for_user(user)
-    role = user.profile.role
-    if role is None:
-        refresh['user_role'] = None
-    else:
-        refresh['user_role'] = role.name
-
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
 
 def blacklist_outstanding_tokens(user):
     """This function blacklists all outstanding tokens belonging to a user."""

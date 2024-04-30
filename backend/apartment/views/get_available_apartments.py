@@ -56,7 +56,12 @@ class GetAvailableApartmentsView(APIView):
             is_taken=False,
             approval_status='accepted',
             advert_days_left__gt=0
-        ).order_by('created_at')
+        ).order_by('-created_at')
+
+        # Return all apartments without pagination if page and page size were not provided.
+        if page is None and page_size is None:
+            serializer = ApartmentSerializer(apartments, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         # Get paginated queryset from the apartments queryset
         try:

@@ -35,6 +35,35 @@ class CreateApartmentView(APIView):
         """
         # pylint: disable=no-member
 
+        user = request.user
+
+        # Confirm user has complete user profile
+        first_name = user.profile.first_name
+        last_name = user.profile.last_name
+        gender = user.profile.gender
+        phone_number = user.profile.phone_number
+        phone_number_is_verified = user.profile.phone_number_is_verified
+        email_is_verified = user.is_verified
+
+        if first_name is None or last_name is None or gender is None or phone_number is None:
+            return Response(
+                {
+                    'error': 'Gender, phone number, first name and last name must be'\
+                        'provided in the profile.'
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Confirm the user has verified his/her phone number.
+        if phone_number_is_verified is False:
+            return Response({'error': 'Phone number must be verified'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # Confirm the user has verified his/her email address.
+        if email_is_verified is False:
+            return Response({'error': 'Email must be verified'},
+                            status=status.HTTP_403_FORBIDDEN)
+
         # Validate data in request body and return error messages if exception is raised.
         serializer = ApartmentSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
@@ -56,7 +85,7 @@ class CreateApartmentView(APIView):
 
         # Create and save apartment in the database.
         apartment = Apartment.objects.create(
-            user=request.user,
+            user=user,
             country=country,
             state=state,
             city=city,

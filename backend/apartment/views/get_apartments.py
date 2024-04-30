@@ -62,7 +62,12 @@ class GetApartmentsView(APIView):
             return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get all apartments
-        apartments = Apartment.objects.all().order_by('created_at')
+        apartments = Apartment.objects.all().order_by('-created_at')
+
+        # Return all apartments without pagination if page and page size were not provided.
+        if page is None and page_size is None:
+            serializer = ApartmentSerializer(apartments, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         # Get paginated queryset from the apartments queryset
         try:
@@ -81,7 +86,7 @@ class GetApartmentsView(APIView):
             page,
             page_size,
             total_pages,
-            url_name='get_available_apartments'
+            url_name='get_apartments'
         )
 
         data = {

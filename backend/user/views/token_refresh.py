@@ -7,10 +7,7 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from user.utils import (
-    blacklist_outstanding_tokens,
-    get_tokens_for_user
-)
+from user.utils import blacklist_outstanding_tokens
 
 
 User = get_user_model()
@@ -62,14 +59,9 @@ class CustomTokenRefreshView(APIView):
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Reset user's access and refresh tokens
-        tokens = get_tokens_for_user(user)
-
-        access_token = tokens.get('access')
-        refresh_token = tokens.get('refresh')
-
-        if access_token is None or refresh_token is None:
-            return Response({'error': 'Failed to generate refresh or access token.'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        refresh = RefreshToken.for_user(user)
+        refresh_token = str(refresh)
+        access_token = str(refresh.access_token)
 
         # Defines response body and http status code for successful token refresh.
         response = Response({'access': access_token}, status=status.HTTP_200_OK)

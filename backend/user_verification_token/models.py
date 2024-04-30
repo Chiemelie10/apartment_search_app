@@ -7,7 +7,7 @@ User = get_user_model()
 
 class VerificationToken(models.Model):
     """This class defines the fields of this class in the database."""
-    verification_token = models.CharField(max_length=7)
+    verification_token = models.CharField(max_length=6)
     user = models.OneToOneField(User, on_delete=models.CASCADE,
                                 related_name='verification_token')
     is_for_password_reset = models.BooleanField(default=False)
