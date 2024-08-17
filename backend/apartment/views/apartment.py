@@ -11,7 +11,7 @@ from apartment.utils import (
     save_apartment_amenities,
     save_apartment_images,
     delete_apartment_images,
-    reset_advert_exp_time
+    # reset_advert_exp_time
 )
 
 
@@ -39,9 +39,9 @@ class ApartmentView(APIView):
         except Apartment.DoesNotExist:
             return Response({'error': 'Apartment not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Reset the time an apartment advert will be taken down
-        if request.user == apartment.user or request.user.is_staff is True:
-            reset_advert_exp_time(apartment)
+        # # Reset the time an apartment advert will be taken down
+        # if request.user == apartment.user or request.user.is_staff is True:
+        #     reset_advert_exp_time(apartment)
 
         # Serialize the apartment object and return a response.
         serializer = ApartmentSerializer(apartment, context={'request': request})
@@ -82,8 +82,8 @@ class ApartmentView(APIView):
         validated_data = serializer.validated_data
 
         # Reset the time an apartment advert will be taken down
-        extend_time = validated_data.get('extend_time')
-        reset_advert_exp_time(apartment, extend_time)
+        # extend_time = validated_data.get('extend_time')
+        # reset_advert_exp_time(apartment, extend_time)
 
         country = validated_data.get('country')
         state = validated_data.get('state')
@@ -194,8 +194,8 @@ class ApartmentView(APIView):
         validated_data = serializer.validated_data
 
         # Reset the time an apartment advert will be taken down
-        extend_time = validated_data.get('extend_time')
-        reset_advert_exp_time(apartment, extend_time)
+        # extend_time = validated_data.get('extend_time')
+        # reset_advert_exp_time(apartment, extend_time)
 
         if request.user == apartment.user:
             if 'country' in validated_data.keys():

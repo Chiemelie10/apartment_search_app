@@ -1,10 +1,10 @@
 """This module defines the functions utilized in the apartment app."""
-from datetime import timedelta
+# from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.files.storage import default_storage
 from django.urls import reverse
-from django.utils import timezone
+# from django.utils import timezone
 from image.models import Image
 from .models import ApartmentAmenity
 
@@ -203,51 +203,116 @@ def delete_apartment_images(images_to_delete):
                 default_storage.delete(image_path)
             image.delete()
 
-def reset_advert_exp_time(apartment, extend_time=False):
-    """
-    This function resets the time remaining for an apartment advert
-    and sets is_taken to True.
-    """
-    if extend_time is True:
-        advert_days_left = apartment.advert_days_left
-        advert_exp_time = apartment.advert_exp_time
+# def reset_advert_exp_time(apartment, extend_time=False):
+#     """
+#     This function resets the time remaining for an apartment advert
+#     and sets is_taken to True.
+#     """
+#     if extend_time is True:
+#         advert_days_left = apartment.advert_days_left
+#         advert_exp_time = apartment.advert_exp_time
 
-        if advert_days_left != 0 and advert_exp_time is not None:
-            # extend advert expiration time by a week
-            advert_days_left = advert_days_left + 7
-            advert_exp_time = advert_exp_time + timedelta(weeks=1)
-            apartment.num_of_exp_time_extension = apartment.num_of_exp_time_extension + 1
-            apartment.advert_exp_time = advert_exp_time
-            apartment.advert_days_left = advert_days_left
-    else:
-        advert_days_left = apartment.advert_days_left
-        advert_exp_time = apartment.advert_exp_time
+#         if advert_days_left != 0 and advert_exp_time is not None:
+#             # extend advert expiration time by a week
+#             advert_days_left = advert_days_left + 7
+#             advert_exp_time = advert_exp_time + timedelta(weeks=1)
+#             apartment.num_of_exp_time_extension = apartment.num_of_exp_time_extension + 1
+#             apartment.advert_exp_time = advert_exp_time
+#             apartment.advert_days_left = advert_days_left
+#     else:
+#         advert_days_left = apartment.advert_days_left
+#         advert_exp_time = apartment.advert_exp_time
 
-    # Check if advert has expired and reset time
-    if advert_days_left != 0 and advert_exp_time is not None:
-        if timezone.now() >= advert_exp_time:
-            apartment.advert_days_left = 0
-            apartment.advert_exp_time = None
-        else:
-            time_difference = str(advert_exp_time - timezone.now())
-            time_remaining_values = time_difference.split(' ')
+#     # Check if advert has expired and reset time
+#     if advert_days_left != 0 and advert_exp_time is not None:
+#         if timezone.now() >= advert_exp_time:
+#             apartment.advert_days_left = 0
+#             apartment.advert_exp_time = None
+#         else:
+#             time_difference = str(advert_exp_time - timezone.now())
+#             time_remaining_values = time_difference.split(' ')
 
-            # Check if only time is left in time_remaining_values, giving it a length of 1.
-            if len(time_remaining_values) == 1:
-                apartment.advert_days_left = 1
-            else:
-                # Get days and time remaining values from time_difference
-                days_remaining = int(time_remaining_values[0])
-                time_remaining = time_remaining_values[-1]
+#             # Check if only time is left in time_remaining_values, giving it a length of 1.
+#             if len(time_remaining_values) == 1:
+#                 apartment.advert_days_left = 1
+#             else:
+#                 # Get days and time remaining values from time_difference
+#                 days_remaining = int(time_remaining_values[0])
+#                 time_remaining = time_remaining_values[-1]
 
-                # Get hour and minute from time_remaining
-                time_remaining_values = time_remaining.split(':')
-                if len(time_remaining_values) < 3:
-                    apartment.advert_days_left = days_remaining
-                else:
-                    hour = int(time_remaining_values[0])
-                    minute = int(time_remaining_values[1])
-                    if hour != 0 and minute != 0:
-                        apartment.advert_days_left = days_remaining + 1
+#                 # Get hour and minute from time_remaining
+#                 time_remaining_values = time_remaining.split(':')
+#                 if len(time_remaining_values) < 3:
+#                     apartment.advert_days_left = days_remaining
+#                 else:
+#                     hour = int(time_remaining_values[0])
+#                     minute = int(time_remaining_values[1])
+#                     if hour != 0 and minute != 0:
+#                         apartment.advert_days_left = days_remaining + 1
 
-        apartment.save()
+#         apartment.save()
+
+# def reset_advert_days_left(apartment, extend_time=False):
+#     """
+#     This function resets the number of days remaining for an apartment advert to expire.
+#     """
+#     advert_days_left = apartment.advert_days_left
+#     advert_exp_time = apartment.advert_exp_time
+
+#     # Check if advert has expired and reset time
+#     if advert_days_left != 0 and advert_exp_time is not None:
+#         if timezone.now() >= advert_exp_time:
+#             advert_days_left = 0
+#             apartment.advert_days_left = 0
+#             apartment.advert_exp_time = None
+#         else:
+#             time_difference = str(advert_exp_time - timezone.now())
+#             time_remaining_values = time_difference.split(' ')
+
+#             # Check if only time is left in time_remaining_values, giving it a length of 1.
+#             if len(time_remaining_values) == 1:
+#                 advert_days_left = 1
+#                 apartment.advert_days_left = 1
+#             else:
+#                 # Get days and time remaining values from time_difference
+#                 days_remaining = int(time_remaining_values[0])
+#                 time_remaining = time_remaining_values[-1]
+
+#                 # Get hour and minute from time_remaining
+#                 time_remaining_values = time_remaining.split(':')
+#                 if len(time_remaining_values) < 3:
+#                     apartment.advert_days_left = days_remaining
+#                     advert_days_left = days_remaining
+#                 else:
+#                     hour = int(time_remaining_values[0])
+#                     minute = int(time_remaining_values[1])
+#                     if hour != 0 and minute != 0:
+#                         advert_days_left = days_remaining + 1
+#                         apartment.advert_days_left = days_remaining + 1
+
+
+#         if extend_time is True:
+#         advert_days_left = apartment.advert_days_left
+#         advert_exp_time = apartment.advert_exp_time
+
+#         if advert_days_left != 0 and advert_exp_time is not None:
+#             # extend advert expiration time by a week
+#             advert_days_left = advert_days_left + 7
+#             advert_exp_time = advert_exp_time + timedelta(weeks=1)
+#             apartment.num_of_exp_time_extension = apartment.num_of_exp_time_extension + 1
+#             apartment.advert_exp_time = advert_exp_time
+#             apartment.advert_days_left = advert_days_left
+
+#         apartment.save()
+
+#     if extend_time is True:
+#         advert_days_left = apartment.advert_days_left
+#         advert_exp_time = apartment.advert_exp_time
+
+#         if advert_days_left != 0 and advert_exp_time is not None:
+#             # extend advert expiration time by a week
+#             advert_days_left = advert_days_left + 7
+#             advert_exp_time = advert_exp_time + timedelta(weeks=1)
+#             apartment.num_of_exp_time_extension = apartment.num_of_exp_time_extension + 1
+#             apartment.advert_exp_time = advert_exp_time
+#             apartment.advert_days_left = advert_days_left

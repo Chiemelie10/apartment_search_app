@@ -2,14 +2,21 @@
 from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from user.utils import check_html_tags, resize_image
 from image.serializers import ImageSerializer
 from image.models import Image
 from country.models import Country
+from country.serializers import CountrySerializer
 from state.models import State
+from state.serializers import StateSerializer
 from city.models import City
+from city.serializers import CitySerializer
 from school.models import School
+from school.serializers import SchoolModelSerializer
 from amenity.models import Amenity
+from amenity.serializers import AmenityModelSerializer
+from user.serializers import UserSerializer
 from .models import Apartment, ApartmentAmenity
 
 
@@ -20,6 +27,7 @@ class ApartmentAmenitySerializer(serializers.ModelSerializer):
     """
     # pylint: disable=no-member
     apartment = serializers.PrimaryKeyRelatedField(read_only=True)
+    amenity = AmenityModelSerializer(required=True)
     class Meta:
         """
             model: Name of the model.
@@ -35,28 +43,33 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
     images = ImageSerializer(many=True, read_only=True)
     extend_time = serializers.BooleanField(default=False, write_only=True, required=False)
-    advert_days_left = serializers.IntegerField(read_only=True)
+    advert_days_left = serializers.SerializerMethodField()
     advert_exp_time = serializers.DateTimeField(read_only=True)
     num_of_exp_time_extension = serializers.IntegerField(read_only=True)
     is_taken_time = serializers.DateTimeField(read_only=True)
     is_taken_number = serializers.IntegerField(read_only=True)
-    country = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=Country.objects.prefetch_related('apartments').all()
-    )
-    state = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=State.objects.prefetch_related('apartments').all()
-    )
-    city = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=City.objects.prefetch_related('apartments').all()
-    )
-    school = serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        queryset=School.objects.prefetch_related('apartments').all()
-    )
+    user = UserSerializer(required=False)
+    # country = serializers.PrimaryKeyRelatedField(
+    #     required=True,
+    #     queryset=Country.objects.prefetch_related('apartments').all()
+    # )
+    country = CountrySerializer(required=True)
+    # state = serializers.PrimaryKeyRelatedField(
+    #     required=True,
+    #     queryset=State.objects.prefetch_related('apartments').all()
+    # )
+    state = StateSerializer(required=True)
+    # city = serializers.PrimaryKeyRelatedField(
+    #     required=True,
+    #     queryset=City.objects.prefetch_related('apartments').all()
+    # )
+    city = CitySerializer(required=True)
+    # school = serializers.PrimaryKeyRelatedField(
+    #     required=False,
+    #     allow_null=True,
+    #     queryset=School.objects.prefetch_related('apartments').all()
+    # )
+    school = SchoolModelSerializer(required=False)
     image_upload = serializers.ListField(
         required = False,
         child = serializers.ImageField(max_length=500, use_url=False),
@@ -97,6 +110,9 @@ class ApartmentSerializer(serializers.ModelSerializer):
             'school',
             'nearest_bus_stop',
             'listing_type',
+            'size',
+            'available_for',
+            'price_duration',
             'title',
             'description',
             'price',
@@ -144,7 +160,9 @@ class ApartmentSerializer(serializers.ModelSerializer):
                 'is_taken_number',
                 'advert_exp_time',
                 'num_of_exp_time_extension',
-                'approval_status'
+                'approval_status',
+                'advert_days_left',
+                'is_taken'
             ]
             for field in excluded_fields:
                 data.pop(field, None)
@@ -299,6 +317,11 @@ class ApartmentSerializer(serializers.ModelSerializer):
                     )
 
         return attrs
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_advert_days_left(self, obj):
+        """Returns number of days left for the apartment object advert to expiration."""
+        return obj.advert_days_left
 
     def validate_amenities(self, amenities):
         """
@@ -531,11 +554,11 @@ class ApartmentSearchSerializer(serializers.ModelSerializer):
         """
         This method validates the request and returns the value of the attrs in the request.
         """
-        country = attrs.get('country')
-        state = attrs.get('state')
-        city = attrs.get('city')
-        school = attrs.get('school')
-        listing_type = attrs.get('listing_type')
+        # country = attrs.get('country')
+        # state = attrs.get('state')
+        # city = attrs.get('city')
+        # school = attrs.get('school')
+        # listing_type = attrs.get('listing_type')
         max_price = attrs.get('max_price')
         min_price = attrs.get('min_price')
         amenities = attrs.get('apartmentamenity_set')
@@ -543,12 +566,12 @@ class ApartmentSearchSerializer(serializers.ModelSerializer):
         if amenities == []:
             amenities = None
 
-        if country is None and state is None and city is None\
-        and school is None and listing_type is None and max_price is None\
-        and min_price is None and amenities is None:
-            raise serializers.ValidationError(
-                'The fields and values to be seached are required.'
-            )
+        # if country is None and state is None and city is None\
+        # and school is None and listing_type is None and max_price is None\
+        # and min_price is None and amenities is None:
+        #     raise serializers.ValidationError(
+        #         'The fields and values to be seached are required.'
+        #     )
 
         if min_price is not None and max_price is None:
             raise serializers.ValidationError('The field "Max_price" is required.')

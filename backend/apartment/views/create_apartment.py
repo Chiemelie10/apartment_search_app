@@ -96,7 +96,6 @@ class CreateApartmentView(APIView):
             price=price,
             listing_type=listing_type,
             nearest_bus_stop=nearest_bus_stop,
-            advert_days_left=28,
             advert_exp_time=timezone.now() + timedelta(weeks=4)
         )
 

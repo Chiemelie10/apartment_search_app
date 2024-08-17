@@ -15,7 +15,7 @@ from apartment.serializers import ApartmentSerializer
 
 
 class GetApartmentsView(APIView):
-    """This class defines methods that gets, updates or deletes an apartment object."""
+    """This class defines a method gets all apartment objects from the database."""
 
     permission_classes = [IsAuthenticated]
     serializer_class = ApartmentSerializer

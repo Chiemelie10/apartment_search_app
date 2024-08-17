@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from django.utils import timezone
 from apartment.models import Apartment
 from apartment.serializers import ApartmentSerializer
 from apartment.utils import (
@@ -16,7 +17,6 @@ class GetAvailableApartmentsView(APIView):
     """This class defines methods that gets, updates or deletes an apartment object."""
 
     serializer_class = ApartmentSerializer
-
 
     @extend_schema(
         parameters=[
@@ -55,7 +55,7 @@ class GetAvailableApartmentsView(APIView):
         apartments = Apartment.objects.filter(
             is_taken=False,
             approval_status='accepted',
-            advert_days_left__gt=0
+            advert_exp_time__gt=timezone.now()
         ).order_by('-created_at')
 
         # Return all apartments without pagination if page and page size were not provided.

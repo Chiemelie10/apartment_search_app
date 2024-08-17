@@ -15,6 +15,7 @@ class Image(models.Model):
     class Meta:
         """ db_table: Name of the table this class creates in the database."""
         db_table = 'images'
+        ordering = ['-created_at']
 
     def __str__(self):
         """This method returns a string representation of the instance of this class."""

@@ -7,7 +7,7 @@ name = "pypi"
 mysqlclient = "*"
 drf-spectacular = "*"
 pillow = "*"
-django = {version = "*", extras = ["argon2"]}
+django = "*"
 django-cors-headers = "*"
 djangorestframework = "*"
 python-dotenv = "*"

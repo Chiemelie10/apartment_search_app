@@ -31,6 +31,8 @@ urlpatterns = [
     path('', include('user.urls')),
     path('', include('apartment.urls')),
     path('', include('message.urls')),
+    path('', include('country.urls')),
+    path('', include('state.urls')),
 ]
 
 if settings.DEBUG:

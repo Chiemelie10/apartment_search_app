@@ -8,6 +8,7 @@ from user.models import UserProfile, UserProfileInterest
 from user.utils import check_html_tags, resize_image
 from user_suspension.models import UserSuspension
 from user_interest.models import UserInterest
+from user_interest.serializers import UserInterestSerializer
 
 
 User = get_user_model()
@@ -19,6 +20,7 @@ class UserProfileInterestSerializer(serializers.ModelSerializer):
     """
     # pylint: disable=no-member
     user_profile = serializers.PrimaryKeyRelatedField(read_only=True)
+    user_interest = UserInterestSerializer(required=True)
     class Meta:
         """
             model: Name of the model
@@ -223,7 +225,25 @@ class UserSerializer(serializers.ModelSerializer):
     This class defines class attributes of the User model to
     be validated when a request to register a user is made.
     """
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(
+        write_only=True,
+        error_messages={
+            'required': 'Password is required.',
+            'blank': 'Password is required.'
+        }
+    )
+    username = serializers.CharField(
+        error_messages={
+            'required': 'Username is required.',
+            'blank': 'Username is required.',
+        }
+    )
+    email = serializers.EmailField(
+        error_messages={
+            'required': 'Email is required.',
+            'blank': 'Email is required.'
+        }
+    )
     profile_information = UserProfileSerializer(
         source='profile', read_only=True, required=False
     )
@@ -235,7 +255,11 @@ class UserSerializer(serializers.ModelSerializer):
                     to be validated
         """
         model = User
-        fields = '__all__'
+        fields = [
+            'id', 'username', 'email', 'password', 'profile_information',
+            'is_active', 'is_staff', 'is_superuser', 'is_verified',
+            'created_at', 'updated_at'
+        ]
 
     def to_representation(self, instance):
         """
@@ -247,7 +271,9 @@ class UserSerializer(serializers.ModelSerializer):
 
         # Check if current user is the owner of the profile
         user = self.context['request'].user
-        if user != instance and user.is_staff is False:
+        method = self.context['request'].method
+
+        if user != instance and user.is_staff is False and method != 'POST':
             excluded_fields = [
                 'email',
                 'id',
@@ -279,26 +305,37 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value):
         """This method does extra validation on the password field."""
-        is_html_in_value, validated_value = check_html_tags(value)
-
-        if is_html_in_value is True:
-            raise serializers.ValidationError('html tags or anything similar is not allowed.')
-
         try:
-            validate_password(validated_value)
+            validate_password(value)
         except ValidationError as e:
-            raise serializers.ValidationError(str(e))
+            raise e
 
-        return validated_value
+        return value
 
     def validate_username(self, value):
         """This method does extra validation on the username field."""
         is_html_in_value, validated_value = check_html_tags(value)
 
         if is_html_in_value is True:
-            raise serializers.ValidationError('html tags or anything similar is not allowed.')
+            raise serializers.ValidationError(
+                'Angle brackets are not allowed. Please remove it to proceed.'
+            )
+
+        if User.objects.filter(username=validated_value).exists():
+            raise serializers.ValidationError(
+                'This username has been taken. Please use a different username.'
+            )
 
         return validated_value
+
+    def validate_email(self, value):
+        """This method does extra validation on the email field."""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                'This email has been taken. Please use a different email address.'
+            )
+
+        return value
 
 
 class VerificationTokenSerializer(serializers.ModelSerializer):
@@ -365,9 +402,38 @@ class LoginSerializer(serializers.Serializer):
     This class lists the User class attributes that will be
     validated in the LoginView.
     """
-    username = serializers.CharField(write_only=True, required=False)
-    email = serializers.EmailField(write_only=True, required=False)
-    password = serializers.CharField(write_only=True, required=True)
+    username = serializers.CharField(
+        write_only=True,
+        required=False,
+        error_messages={
+            'required': 'Username is required.',
+            'blank': 'Username is required.'
+        }
+    )
+    email = serializers.EmailField(
+        write_only=True,
+        required=False,
+        error_messages={
+            'required': 'Email is required.',
+            'blank': 'Email is required.'
+        }
+    )
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        error_messages={
+            'required': 'Password is required.',
+            'blank': 'Password is required.'
+        }
+    )
+    username_or_email = serializers.CharField(
+        write_only=True,
+        required=False,
+        error_messages={
+            'required': 'Username or email is required.',
+            'blank': 'Username or email is required.'
+        }
+    )
 
     def validate(self, attrs):
         """
@@ -377,11 +443,18 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         email = attrs.get('email')
         password = attrs.get('password')
+        username_or_email = attrs.get('username_or_email')
 
-        if not email and not username:
+        if not email and not username and not username_or_email:
             raise serializers.ValidationError('Email or username is required.')
 
         if email and username:
+            raise serializers.ValidationError('Provide either email or username, not both.')
+
+        if email and username_or_email:
+            raise serializers.ValidationError('Provide either email or username, not both.')
+
+        if username and username_or_email:
             raise serializers.ValidationError('Provide either email or username, not both.')
 
         if not password:

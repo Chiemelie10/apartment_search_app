@@ -17,6 +17,7 @@ class LoginView(APIView):
     """This class defines a method that log a user into the application."""
 
     serializer_class = LoginSerializer
+    authentication_classes = []
 
     def get_request_user(self, request, validated_data):
         """
@@ -30,14 +31,15 @@ class LoginView(APIView):
         password = validated_data.get('password')
         username = validated_data.get('username')
         email = validated_data.get('email')
+        username_or_email = validated_data.get('username_or_email')
 
         if username:
             user = authenticate(request, username=username, password=password)
         elif email:
             user = authenticate(request, username=email, password=password)
+        elif username_or_email:
+            user = authenticate(request, username=username_or_email, password=password)
 
-        if user is None:
-            return None
         return user
 
     # Response schema for drf_spectacular
@@ -69,7 +71,7 @@ class LoginView(APIView):
         # Authenticate user
         user = self.get_request_user(request, validated_data)
         if user is None:
-            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Check if user is not active
         if user.is_active is False:
@@ -109,8 +111,11 @@ class LoginView(APIView):
         # Blacklist all outstanding refresh token for the user
         blacklist_outstanding_tokens(user)
 
-        # Generate access and refresh tokens for user
+        # Generate access and refresh tokens for user and add custom claims
         refresh = RefreshToken.for_user(user)
+        refresh['username'] = user.username
+        refresh['is_staff'] = str(user.is_staff)
+
         refresh_token = str(refresh)
         access_token = str(refresh.access_token)
 

@@ -1,8 +1,11 @@
 """This module defines class ApartmentSearch"""
+from django.utils import timezone
+from django.db.models import F
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
+from amenity.models import Amenity
 from apartment.models import Apartment
 from apartment.serializers import ApartmentSerializer, ApartmentSearchSerializer
 from apartment.utils import (
@@ -22,49 +25,62 @@ class ApartmentSearchView(APIView):
     @extend_schema(
         responses={200: ApartmentSerializer}
     )
-    def post(self, request):
+    def get(self, request):
         """
         This method returns apartments that matches the search query
         entered by the user.
         """
         # pylint: disable=no-member
 
-        serializer = ApartmentSearchSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # serializer = ApartmentSearchSerializer(data=request.data)
+        # serializer.is_valid(raise_exception=True)
+        # validated_data = serializer.validated_data
 
-        validated_data = serializer.validated_data
-        country = validated_data.get('country')
-        state = validated_data.get('state')
-        city = validated_data.get('city')
-        school = validated_data.get('school')
-        listing_type = validated_data.get('listing_type')
-        max_price = validated_data.get('max_price')
-        min_price = validated_data.get('min_price')
-        amenities = validated_data.get('apartmentamenity_set')
+        all_params = request.GET.dict()
+        print(all_params)
+        print()
 
-        apartments = Apartment.objects.all()
+        country = all_params.get('country')
+        state = all_params.get('state')
+        city = all_params.get('city')
+        school = all_params.get('school')
+        listing_type = all_params.get('listing_type')
+        max_price = all_params.get('max_price')
+        min_price = all_params.get('min_price')
+        available_for = all_params.get('available_for')
+        sort_type = all_params.get('sort_type')
+        amenities = all_params.get('apartmentamenity_set')
 
-        if country is not None:
+        apartments = Apartment.objects.filter(
+            is_taken=False,
+            approval_status='accepted',
+            advert_exp_time__gt=timezone.now()
+        )
+
+        if country is not None and country != "":
             apartments = apartments.filter(country=country)
 
-        if state is not None:
+        if state is not None and state != "":
             apartments = apartments.filter(state=state)
 
-        if city is not None:
+        if city is not None and city != "":
             apartments = apartments.filter(city=city)
 
-        if school is not None:
+        if school is not None and school != "":
             apartments = apartments.filter(school=school)
 
-        if listing_type is not None:
+        if listing_type is not None and listing_type != "":
             apartments = apartments.filter(listing_type=listing_type)
 
-        if min_price is not None and max_price is not None:
+        if available_for is not None and available_for != "":
+            apartments = apartments.filter(available_for=available_for)
+
+        if min_price is not None and min_price != "" and max_price is not None and max_price != "":
             apartments = apartments.filter(price__range=(min_price, max_price))
-        elif min_price is None and max_price is not None:
+        elif min_price is None or min_price == "" and max_price is not None and max_price != "":
             apartments = apartments.filter(price__range=(0, max_price))
 
-        if amenities is not None:
+        if amenities is not None and amenities != "":
             for amenity in amenities:
                 amenity_obj = amenity.get('amenity')
                 amenity_quantity = amenity.get('quantity')
@@ -85,7 +101,32 @@ class ApartmentSearchView(APIView):
                         )
 
         # Order the apartments queryset by inverse of created_at
-        apartments = apartments.order_by('-created_at')
+        if sort_type is None or sort_type == '':
+            apartments = apartments.order_by('-created_at')
+        elif sort_type in ('bedroom'):
+            bedroom = Amenity.objects.get(name='bedroom')
+
+            # Filter and get only apartments with bedrooms.
+            # Adds a new field amenity_quantity to each filtered Apartment instance.
+            # Sort the result based on value of sort type.
+            apartments = apartments.filter(
+                apartmentamenity__amenity=bedroom
+            ).annotate(
+                amenity_quantity=F('apartmentamenity__quantity')
+            ).order_by('amenity_quantity')
+        elif sort_type in ('-bedroom'):
+            bedroom = Amenity.objects.get(name='bedroom')
+
+            # Filter and get only apartments with bedrooms.
+            # Adds a new field amenity_quantity to each filtered Apartment instance.
+            # Sort the result based on value of sort type.
+            apartments = apartments.filter(
+                apartmentamenity__amenity=bedroom
+            ).annotate(
+                amenity_quantity=F('apartmentamenity__quantity')
+            ).order_by('-amenity_quantity')
+        else:
+            apartments = apartments.order_by(sort_type)
 
         # Get the values of page and page_size from query string of the request.
         try:

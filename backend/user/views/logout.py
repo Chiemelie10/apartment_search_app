@@ -45,6 +45,8 @@ class LogoutView(APIView):
         try:
             decoded_token = RefreshToken(refresh_token)
             decoded_token.blacklist()
-            return Response({'message': 'User logout was successful.'}, status=status.HTTP_200_OK)
+            response = Response({'message': 'User logout was successful.'}, status=status.HTTP_200_OK)
+            response.delete_cookie('refresh')
+            return response
         except TokenError as e:
             return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)

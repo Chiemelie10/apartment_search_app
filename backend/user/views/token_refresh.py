@@ -15,6 +15,8 @@ User = get_user_model()
 class CustomTokenRefreshView(APIView):
     """This class defines a method that refreshes an access token."""
 
+    authentication_classes = []
+
     @extend_schema(
         request=None,
         responses={200: {'example': {'access': 'access_token_value'}}}
@@ -34,8 +36,17 @@ class CustomTokenRefreshView(APIView):
         refresh_token = request.COOKIES.get('refresh')
         if not refresh_token:
             return Response(
-                {'error': 'Refresh token must be set in the cookie.'},
-                status=status.HTTP_401_UNAUTHORIZED
+                {
+                    'code': 'token_not_valid',
+                    'detail': 'Given token not valid for any token type',
+                    'messages': [
+                        {
+                            'token_class': 'RefreshToken',
+                            'message': 'Refresh token must be set in the cookie.',
+                            'token_type': 'refresh'
+                        }
+                    ]
+                }, status=status.HTTP_401_UNAUTHORIZED
             )
 
         # Verify signature of token.
@@ -50,7 +61,19 @@ class CustomTokenRefreshView(APIView):
                 user_id = response.get('user_id')
                 # Blcklist all tokens belonging to the user
                 blacklist_outstanding_tokens(user_id)
-            return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {
+                    'code': 'token_not_valid',
+                    'detail': 'Given token not valid for any token type',
+                    'messages': [
+                        {
+                            'token_class': 'RefreshToken',
+                            'message': str(e),
+                            'token_type': 'refresh'
+                        }
+                    ]
+                }, status=status.HTTP_401_UNAUTHORIZED
+            )
 
         # Get user object
         try:
@@ -60,6 +83,9 @@ class CustomTokenRefreshView(APIView):
 
         # Reset user's access and refresh tokens
         refresh = RefreshToken.for_user(user)
+        refresh['username'] = user.username
+        refresh['is_staff'] = str(user.is_staff)
+
         refresh_token = str(refresh)
         access_token = str(refresh.access_token)
 
