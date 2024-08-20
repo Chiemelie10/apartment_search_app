@@ -1,41 +1,22 @@
-import { Path, UseFormRegister } from "react-hook-form";
-import { SearchFormData } from "@/interfaces";
 import { usePathname } from "next/navigation";
 import { capitalize } from "@/utils";
 
 
-interface SelectProps {
-    name: Path<SearchFormData>;
-    register: UseFormRegister<SearchFormData>;
-    id: string;
-    options: { name: string, id: string }[] | number[] | string[] | undefined;
-    disabled?: boolean;
-    handleChange?: () => void;
-}
-
 const Select = (props: SelectProps) => {
-    const {register, name, options, disabled } = props;
+    const {register, name, options, disabled, dataTestId } = props;
     const pathname = usePathname();
-    // const { onChange, ...rest } = register(name)
-    // if (name === "city") console.log(options)
 
     return (
         <select
             {...register(name)}
             disabled={disabled}
-            // onChange={(e) => {
-            //     onChange(e);
-            //     if (handleChange) {
-            //         handleChange();
-            //     }
-            // }}
+            data-testid={dataTestId}
             className={`
                 ${pathname === "/" ?
                     `h-8 sm:h-10 w-full px-2 py-0 sm:py-2 mt-2 rounded-sm
-                    text-base font-serif
-                    ${disabled ? "" : "hover:cursor-pointer"}`
+                    text-base ${disabled ? "" : "hover:cursor-pointer"}`
                 :   `h-8 sm:h-9 w-full px-2 py-0 sm:py-2 rounded-sm
-                    text-base font-serif bg-gray-200
+                    text-base bg-gray-200
                     ${disabled ? "" : "hover:cursor-pointer"}`
             }`}
         >
@@ -57,17 +38,31 @@ const Select = (props: SelectProps) => {
                         return <option 
                                     key={index}
                                     value={value}
-                                    className="text-base font-serif w-full"
+                                    className="text-base w-full"
                                 >
                                     {value === "sale" ? "Buy"
                                         : value === "short_let" ? "Short let"
+                                        : capitalize(value)}
+                                </option>
+                    } else if (name === "sort_type" && typeof(value) === "string") {
+                        return <option 
+                                    key={index}
+                                    value={value}
+                                    className="text-base w-full"
+                                >
+                                    {value === "price" ? "Lowest price"
+                                        : value === "-price" ? "Highest price"
+                                        : value === "created_at" ? "Least recent"
+                                        : value === "-created_at" ? "Most recent"
+                                        : value === "bedroom" ? "Least number of bedrooms"
+                                        : value === "-bedroom" ? "Most number of bedrooms"
                                         : capitalize(value)}
                                 </option>
                     } else if (typeof(value) === "string") {
                         return <option 
                                     key={index}
                                     value={value}
-                                    className="text-base font-serif w-full"
+                                    className="text-base w-full"
                                 >
                                     {capitalize(value)}
                                 </option>
@@ -75,7 +70,7 @@ const Select = (props: SelectProps) => {
                         return <option 
                                     key={index}
                                     value={value}
-                                    className="text-base font-serif w-full"
+                                    className="text-base w-full"
                                 >
                                     {value}
                                 </option>
@@ -83,7 +78,7 @@ const Select = (props: SelectProps) => {
                         return <option
                                     key={value.id}
                                     value={value.id}
-                                    className="text-base font-serif w-full"
+                                    className="text-base w-full"
                                 >
                                     {capitalize(value.name)}
                                 </option>

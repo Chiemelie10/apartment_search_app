@@ -5,7 +5,7 @@ import DesktopDropdown from "./DesktopDropdown";
 
 const HeaderNavbar = () => {
     return (
-        <div className="hidden sm:flex justify-between w-full text-base font-serif">
+        <div className="hidden sm:flex justify-between w-full text-base">
             <nav className="flex items-center">
                 <div aria-label="properties" className="pl-8 flex">
                     {navBarMenuItems.map((item, index) => {

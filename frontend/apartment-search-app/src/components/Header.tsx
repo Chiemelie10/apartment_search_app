@@ -5,7 +5,7 @@ const Header = () => {
     return (
         <header
             className="h-16 bg-blue-950 w-full flex items-center px-4
-                lg:px-10 text-base font-serif"
+                lg:px-10 text-base"
         >
             <HambugerMenu />
             <div

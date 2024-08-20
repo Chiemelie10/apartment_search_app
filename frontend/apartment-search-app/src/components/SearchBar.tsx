@@ -1,6 +1,5 @@
 "use client";
 
-import { SearchBarProps, SearchFormData, State } from "@/interfaces";
 import Select from "./Select";
 import { useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,11 +9,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import qs from "qs";
 import Link from "next/link";
-import Spinner from "./Spinner";
 import { Search } from "react-feather";
 
 
 const SearchBar = ({setPage}: SearchBarProps ) => {
+    // This component displays a searchbar on pages it is used in.
+
     const [searchedOption, setSearchedOption] = useState("rent");
     const router = useRouter();
     const pathname = usePathname();
@@ -22,6 +22,10 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
     const priceRange = getPriceRange(0, 10000000, 200000);
     const listingType = getListingType();
 
+    /*
+        Fetches the values from API used to pupulate the options of the
+        select elements named state and city.
+    */
     const {isError, error, data} = useQuery<State[], Error>({
         queryKey: ["states"],
         queryFn: async (): Promise<State[]> => {
@@ -49,12 +53,22 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
     });
 
     const selectedState = useWatch({control, name: "state"});
-    const selectedSearchOption = useWatch({control, name: "available_for"});
     // const selectedCity = useWatch({control, name: "city"});
     const selectedMinPrice = useWatch({control, name: "min_price"});
 
+    /*
+        The map function is used to loop over the data returned from the API above
+        to get name and id of each state object.
+    */
     const states = data?.map((state) => ({name: state.name, id: state.id}));
 
+    /*
+        The below code uses the find function to get an array containing state objects
+        that the state id matches the value returned by useWatch. In this case only one object
+        will be in the array since id is unique. The map function is then used to loop
+        over the cities array in the state object, returning an array of objects containing
+        the name and id of each city.
+    */
     const cities = selectedState
         ? data?.find((state) => state.id === selectedState)?.cities.map(
             (city) => ({name: city.name, id: city.id})) || []
@@ -66,10 +80,18 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
     //             (school) =>({name: school.name, id: school.id})) || []
     //     : [];
 
-    let isSubmittingQuery = false;
+    // The onSubmit function only runs when the search button of the form clicked.
     const onSubmit: SubmitHandler<SearchFormData> = (data) => {
-        isSubmittingQuery = true;
+
         if (pathname === "/") {
+            /*
+                This block of code only runs on home page. it assigns the value of
+                searchedOption state to the created variable available_for.
+                available_for is the parameter name the API expects the query string to have.
+                The main purpose of the if block to assign the state value "buy" as "sale" to
+                available_for. The value sale is one of the values expected by the API for
+                the available_for parameter not buy.
+            */
             let available_for = "";
 
             if (searchedOption === "buy") {
@@ -80,35 +102,68 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                 available_for = "share";
             }
 
+            /*
+                available_for is added to the data, converted to string and used to construct the
+                pathname and query string passed to router.push()
+            */
             data.available_for = available_for;
             const queryString = qs.stringify(data);
             router.push(`/search/${searchedOption}?${queryString}`);
-            isSubmittingQuery = false;
         } else  {
-            let searchOption = "";
-            if (selectedSearchOption === "sale") {
-                searchOption = "buy"
-            } else if (selectedSearchOption === "rent") {
-                searchOption = "rent"
-            } else if (selectedSearchOption === "share") {
-                searchOption = "share"
-            } else if (selectedSearchOption === "lease") {
-                searchOption = "lease"
-            } else if (selectedSearchOption === "short_let") {
-                searchOption = "short-let"
+            /*
+                This block of code runs in pages that uses the SearchBar component
+                except the home page. Unlike in the block above, the value of available_for
+                is not gotten from the state, searchedOption. This is because there is a
+                select element with that name included in the form when SearchBar component is used
+                in pages that are not the home page. The purpose of the if and else if blocks
+                are to covert values of available_for, from the form, to the appropriate values
+                that matches the expected search routes and assigning it to searchedOption variable.
+                Note that "searchedOption" in this block is not the one declared for state at the
+                beginning of the component.
+            */
+
+            const available_for = data.available_for
+            let searchedOption = "";
+
+            if (available_for === "sale") {
+                searchedOption = "buy"
+            } else if (available_for === "rent") {
+                searchedOption = "rent"
+            } else if (available_for === "share") {
+                searchedOption = "share"
+            } else if (available_for === "lease") {
+                searchedOption = "lease"
+            } else if (available_for === "short_let") {
+                searchedOption = "short-let"
             }
 
+            // Converts the object "data" to string 
             const queryString = qs.stringify(data);
-            if (setPage) setPage(1);
-            router.push(`/search/${searchOption}?${queryString}`);
-            isSubmittingQuery = false;
+
+            /*
+                Resets the page state to 1. If not done page maintains the current state
+                after the search button has been clicked and new page rendered. It
+                ensures API request for page 1 is always made.
+            */
+            if (setPage) {
+                setPage(1)
+            }
+
+            /*
+                router.push() navigates to a new route if for example pathname, searchedOption,
+                was changed from rent to buy in the new search.
+                It remains in the same route if only query string changes.
+                The key thing is it trigers the re-render of the search results page
+                which results in fresh request to the API using useQuery and axios.
+            */
+            router.push(`/search/${searchedOption}?${queryString}`);
         }
     }
 
     const id = useId();
 
     return (
-        <div className="flex flex-col font-serif text-base">
+        <div className="flex flex-col text-base">
             {
                 pathname === "/" && (
                     <div className="self-center mb-14">
@@ -143,6 +198,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 >
                                     <Link
                                         href=""
+                                        data-testid="SearchBar-buy"
                                         onClick={() => setSearchedOption("buy")}
                                         className="w-full h-full flex justify-center items-center"
                                         >
@@ -158,6 +214,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 >
                                     <Link
                                         href=""
+                                        data-testid="SearchBar-rent"
                                         onClick={() => setSearchedOption("rent")}
                                         className="w-full h-full flex justify-center items-center">
                                             Rent
@@ -172,6 +229,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 >
                                     <Link
                                         href=""
+                                        data-testid="SearchBar-share"
                                         onClick={() => setSearchedOption("share")}
                                         className="w-full h-full flex justify-center items-center"
                                     >
@@ -183,6 +241,8 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                     )
                 }
                 <form
+                    id={`SearchBar-form-${id}`}
+                    data-testid="SearchBar-form"
                     onSubmit={handleSubmit(onSubmit)}
                     className={
                         `${pathname === "/" ?   
@@ -201,6 +261,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                     register={register}
                                     name="available_for"
                                     id={`available-for-${id}`}
+                                    dataTestId="SearchBar-available_for"
                                     options={["sale", "rent", "share", "short_let", "lease"]}
                                     disabled={false}
                                 />
@@ -229,6 +290,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 register={register}
                                 name="state"
                                 id={`state-${id}`}
+                                dataTestId="SearchBar-state"
                                 options={states}
                                 disabled={false}
                             />
@@ -247,6 +309,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 register={register}
                                 name="city"
                                 id={`city-${id}`}
+                                dataTestId="SearchBar-city"
                                 options={cities}
                                 disabled={!selectedState}
                             />
@@ -273,6 +336,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 register={register}
                                 name="min_price"
                                 id={`min_price-${id}`}
+                                dataTestId="SearchBar-min_price"
                                 options={priceRange}
                                 disabled={false}
                             />
@@ -293,6 +357,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 register={register}
                                 name="max_price"
                                 id={`max_price-${id}`}
+                                dataTestId="SearchBar-max_price"
                                 options={priceRange}
                                 />
                         </div>
@@ -305,6 +370,9 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                         }`}
                     >
                         <button
+                            id={`more-filters-${id}`}
+                            data-testid="SearchBar-more-filters"
+                            name="more filters"
                             className={`
                                 ${pathname === "/" ?
                                     "w-[49%] lg:w-[43%] lg:max-w-72 lg:min-w-24"
@@ -331,6 +399,9 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                             }`}
                         >
                             <button
+                                id={`submit-${id}`}
+                                data-testid="SearchBar-submit"
+                                name="submit"
                                 type="submit"
                                 className={`
                                     ${pathname === "/" ?
@@ -395,4 +466,4 @@ export default SearchBar;
 //     } = useSubmitForm<SearchFormData, ServerApartmentData[]>({
 //     mutateAsync,
 //     defaultValues,
-// });
+// })

@@ -1,4 +1,3 @@
-import { DropdownProps } from "@/interfaces";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronUp, ChevronDown } from "react-feather"
@@ -21,7 +20,7 @@ const MobileDropdown = (props: DropdownProps) => {
 
     return (
         <>
-            <div className="text-base font-serif">
+            <div className="text-base">
                 <button
                     onClick={toggle}
                     className="hover:bg-gray-400 w-full hover:rounded-md"

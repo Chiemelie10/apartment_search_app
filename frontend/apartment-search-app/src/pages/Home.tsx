@@ -58,7 +58,7 @@ const Home = () => {
                     className="hidden lg:inline-block"
                 >
                     <span
-                        className="text-gray-950 text-base font-serif absolute
+                        className="text-gray-950 text-base absolute
                             bottom-4 right-10"
                     >
                         See more

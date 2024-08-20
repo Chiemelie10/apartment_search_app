@@ -1,7 +1,6 @@
 import ImageCarousel from "./ImageCarousel";
 import Link from "next/link";
 import { capitalize } from "@/utils";
-import { NonPaginatedPropertyProps } from "@/interfaces";
 import PropertyAmenities from "./PropertyAmenities";
 
 
@@ -11,7 +10,7 @@ const NonPaginatedProperty = (props: NonPaginatedPropertyProps) => {
 
     if (isSuccess && data && data.apartments.length > 0) {
         return (
-            <div className="w-full font-serif text-base">
+            <div className="w-full text-base">
                 <h1
                     className="px-4 lg:px-10 font-bold text-lg sm:text-xl lg:text-2xl
                         text-gray-950"

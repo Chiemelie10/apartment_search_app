@@ -70,7 +70,7 @@ const HambugerMenu = () => {
             <div
                 className={
                     `bg-blue-950 absolute top-0 left-0 w-[90%] xs:w-[85%] sm:w-[80%] md:w-3/4 h-full
-                    px-4 py-2 lg:hidden overflow-y-auto flex flex-col z-30 text-base font-serif
+                    px-4 py-2 lg:hidden overflow-y-auto flex flex-col z-30 text-base
                     transition-transform ease-in-out ${hasMounted ? "duration-300" : "duration-0"}
                     transform ${isOpen ? "translate-x-0" : "-translate-x-full"}`
                 }

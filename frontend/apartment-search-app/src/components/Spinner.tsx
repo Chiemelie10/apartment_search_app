@@ -1,6 +1,3 @@
-import { SpinnerProps } from "@/interfaces";
-
-
 const Spinner = ({style}: SpinnerProps) => {
     return (
         <div

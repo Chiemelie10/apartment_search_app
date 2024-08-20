@@ -1,6 +1,9 @@
-import { ApartmentData, MenuItems } from "./interfaces";
-
 export const getPriceRange = (min: number, max: number, step: number): number[] => {
+    /*
+        This function returns an array of numbers utilized in the SearchBar component.
+        The numbers in the array are displayed as options for the select element with
+        names "min_price" and "max_price".
+    */
     let prices: number[] = [];
     for (let num = min; num <= max; num += step) {
         prices.push(num);
@@ -9,6 +12,11 @@ export const getPriceRange = (min: number, max: number, step: number): number[] 
 }
 
 export const getListingType = (): string[] => {
+    /*
+        This function returns an array of listing type used in the SearchBar component.
+        The items in the array are displayed as options for the select element with
+        name value "listing_type".
+    */
     return [
         "none self-contained",
         "self-contained",
@@ -21,6 +29,9 @@ export const getListingType = (): string[] => {
 }
 
 export const capitalize = (value: string): string => {
+    /*
+        This function capitalizes the first character of a string.
+    */
     const fisrtLetter = value.charAt(0);
     const firstLetterCap = fisrtLetter.toUpperCase();
     const remainingLetters = value.slice(1);
@@ -30,6 +41,11 @@ export const capitalize = (value: string): string => {
 }
 
 export const getPaginationIndices = (limit: number, page: number, data: ApartmentData) => {
+    /*
+        Description: This function is useful for pagination. It returns the starting
+        and ending positions (type number) of Apartment objects in the data array returned
+        by the API. For context, it's values was used in displaying "1 to 5 of 20 apartments."
+    */
     const dataLength = data.total_number_of_apartments;
     const start = (page - 1) * limit + 1;
     let end = page * limit;
@@ -42,6 +58,11 @@ export const getPaginationIndices = (limit: number, page: number, data: Apartmen
 }
 
 export const getPages = (page: number, data: ApartmentData) => {
+    /*
+        This function returns an array of page numbers. The page
+        numbers are displayed as clickable buttons at the bottom
+        of any pagination section.
+    */
     const totalPages = data.total_pages;
 
     const pages: number[] = []
@@ -95,6 +116,14 @@ export const getPages = (page: number, data: ApartmentData) => {
 
     return pages;
 }
+
+export const setScrollPosition = () => {
+    // This function sets scroll position the top of the page.
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    })
+} 
 
 export const otherMenuItems: MenuItems[] = [
     {

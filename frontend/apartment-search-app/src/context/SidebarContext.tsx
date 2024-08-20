@@ -1,6 +1,5 @@
 "use client"
 
-import { SidebarContextType } from "@/interfaces";
 import { useState, createContext, ReactNode } from "react";
 
 

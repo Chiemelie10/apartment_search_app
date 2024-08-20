@@ -1,6 +1,5 @@
 "use client";
 
-import { DropdownProps } from "@/interfaces";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -18,7 +17,7 @@ const DesktopDropdown = (props: DropdownProps) => {
 
     return (
         <>
-            <div className="relative text-base font-serif">
+            <div className="relative text-base">
                 <button
                     className="text-white mr-4 py-1 px-2 rounded-sm hidden
                         lg:inline-block hover:bg-slate-500"

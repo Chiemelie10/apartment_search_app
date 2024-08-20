@@ -1,4 +1,3 @@
-import { AmenityName, PropertyAmenitiesProp } from "@/interfaces";
 import BedIcon from "../../public/images/bedroom_icon.svg";
 import BathtubIcon from "../../public/images/bathtub_icon.svg";
 import GarageIcon from "../../public/images/garage_icon.svg";
@@ -22,7 +21,7 @@ const PropertyAmenities = ({amenities}: PropertyAmenitiesProp) => {
 
     return (
         <div
-            className="flex text-base font-serif w-full overflow-x-scroll
+            className="flex text-base w-full overflow-x-scroll
                 py-1 border-y-[1px] border-y-solid border-y-gray-300"
         >
             {amenities

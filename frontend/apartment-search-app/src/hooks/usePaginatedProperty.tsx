@@ -1,5 +1,4 @@
 import axiosInstance from "@/api/axios";
-import { ApartmentData, UsePaginatedPropertyProp } from "@/interfaces";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 const usePaginatedProperty = ({page, queryKey1, url}: UsePaginatedPropertyProp) => {

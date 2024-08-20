@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ImageCarouselProp } from "@/interfaces";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "react-feather";
 import { usePathname } from "next/navigation";
@@ -28,7 +27,7 @@ const ImageCarousel = ({ images }: ImageCarouselProp) => {
     }
 
     return (
-        <div className="relative text-base font-serif">
+        <div className="relative text-base">
             <div
                 className={
                     `relative w-full rounded-xl

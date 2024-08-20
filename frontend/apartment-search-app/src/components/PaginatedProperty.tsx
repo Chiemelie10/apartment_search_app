@@ -1,8 +1,7 @@
 import ImageCarousel from "./ImageCarousel";
 import Link from "next/link";
-import { capitalize, getPages, getPaginationIndices } from "@/utils";
+import { capitalize, getPaginationIndices } from "@/utils";
 import GetNextOrPrevPage from "./GetNextOrPrevPage";
-import { PaginatedPropertyProps, SearchFormData } from "@/interfaces";
 import PropertyAmenities from "./PropertyAmenities";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Select from "./Select";
@@ -27,33 +26,40 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
         }
     })
 
+    // uswWatch triggers rerender any time the state of sort_type select element changes.
+    // It returns the latest value (string) of the current state of the element. 
     let selectedSortType = useWatch({control, name: "sort_type"});
 
 
     useEffect(() => {
         if (selectedSortType) {
+            // Returns the value of available_for from the url query string.
+            // available_for has values like rent, share, sale/buy, which
+            // is included in the pathname of the route for searching.
             const searchedOption = searchParams?.get("available_for");
 
-
-            if (selectedSortType === "Lowest price") {
-                selectedSortType = "price"
-            } else if (selectedSortType === "Highest price") {
-                selectedSortType = "-price"
-            } else if (selectedSortType === "Least recent") {
-                selectedSortType = "created_at"
-            } else if (selectedSortType === "Most recent") {
-                selectedSortType = "-created_at"
-            } else if (selectedSortType === "Least number of bedrooms") {
-                selectedSortType = "bedroom"
-            } else if (selectedSortType === "Most number of bedrooms") {
-                selectedSortType = "-bedroom"
-            }
-
+            // Adds sort_type parameter to the query string.
             const params = new URLSearchParams(searchParams?.toString());
             params.set("sort_type", selectedSortType)
 
+            // Converts params from object to string
             const sortQueryString = params.toString()
-            if (setPage) setPage(1);
+
+            /*
+                Resets the page state to 1. If not done page maintains the current state
+                after the sort has been done.
+            */
+            if (setPage) {
+                setPage(1);
+            }
+
+            /*
+                router.push() navigates to a new route if for example searchedOption
+                was changed from rent to buy.
+                It remains in the same route if only query string changes.
+                The key thing is it trigers the re-render of the search results page
+                which results in fresh request to the API using useQuery and axios.
+            */
             router.push(`/search/${searchedOption}?${sortQueryString}`);
         }
     }, [selectedSortType, router])
@@ -65,9 +71,12 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
         const [start, end] = getPaginationIndices(limit, page, data);
 
         return (
-            <div className="w-[90%] lg:w-[80%] font-serif text-base">
+            <div
+                className="w-[90%] lg:w-[80%] text-base"
+            >
                 {
                     data.apartments.length > 0 && (
+                        // Heading for the page
                         <h1
                             className={
                                 `${pathname === "/" ? "lg:px-10" : "lg:px-6 mt-5"}
@@ -81,14 +90,16 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                         </h1>
                     )
                 }
-                {start !== end
-                ?   <div
-                        className={
-                            `flex flex-col gap-5 md:gap-0 md:flex-row md:justify-between
-                            md:items-center
-                            ${pathname === "/" ? "lg:px-10" : "lg:px-6 mt-1 md:mt-5"}`
-                        }
-                    >
+                {/* Number of displayed apartments and sort form */}
+                <div
+                    className={
+                        `flex flex-col gap-5 md:gap-0 md:flex-row md:justify-between
+                        md:items-center
+                        ${pathname === "/" ? "lg:px-10" : "lg:px-6 mt-1 md:mt-5"}`
+                    }
+                >
+                    {start !== end
+                    ?
                         <div>
                             <span
                                 className="text-gray-700 dark:text-gray-400"
@@ -103,34 +114,7 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                 >{data.total_number_of_apartments}</span> properties
                             </span>
                         </div>
-                        <div>
-                            <form className="flex items-center">
-                                <span className="mr-2 font-bold">Sort:</span>
-                                <div className="w-fit">
-                                    <Select
-                                        name="sort_type"
-                                        register={register}
-                                        id={`sort-type-${id}`}
-                                        options={[
-                                            "Lowest price",
-                                            "Highest price",
-                                            "Least recent",
-                                            "Most recent",
-                                            "Least number of bedrooms",
-                                            "Most number of bedrooms"
-                                        ]}
-                                    />
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                :   <div
-                        className={
-                            `flex flex-col gap-5 md:gap-0 md:flex-row md:justify-between
-                            md:items-center
-                            ${pathname === "/" ? "lg:px-10" : "lg:px-6 mt-1 md:mt-5"}`
-                        }
-                    >
+                    :
                         <div>
                             <span
                                 className="text-gray-700 dark:text-gray-400"
@@ -143,28 +127,35 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                 > {data.total_number_of_apartments}</span> properties
                             </span>
                         </div>
-                        <div>
-                            <form className="flex items-center">
-                                <span className="mr-2 font-bold">Sort:</span>
-                                <div className="w-fit">
-                                    <Select
-                                        name="sort_type"
-                                        register={register}
-                                        id={`sort-type-${id}`}
-                                        options={[
-                                            "Lowest price",
-                                            "Highest price",
-                                            "Least recent",
-                                            "Most recent",
-                                            "Least number of bedrooms",
-                                            "Most number of bedrooms"
-                                        ]}
-                                    />
-                                </div>
-                            </form>
-                        </div>
+                    }
+                    <div>
+                        {/* Sort form */}
+                        <form
+                            id={`PaginatedProperty-sort-form-${id}`}
+                            data-testid="PaginatedProperty-sort-form"
+                            className="flex items-center"
+                        >
+                            <span className="mr-2 font-bold">Sort:</span>
+                            <div className="w-fit">
+                                <Select
+                                    name="sort_type"
+                                    register={register}
+                                    id={`sort-type-${id}`}
+                                    dataTestId="paginated-property-sort-type"
+                                    options={[
+                                        "price",
+                                        "-price",
+                                        "created_at",
+                                        "-created_at",
+                                        "bedroom",
+                                        "-bedroom"
+                                    ]}
+                                />
+                            </div>
+                        </form>
                     </div>
-                }
+                </div>
+                {/* Paginated card section */}
                 <div className="w-full lg:px-6 mt-5 lg:mt-8">
                     <ul className="w-full grid grid-cols-1
                             gap-14"
@@ -174,6 +165,8 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                 href={`/apartment/${apartment.id}`}
                                 key={apartment.id}
                                 className="inline-block"
+                                data-testid={`${apartment.id}`}
+                                id={`${apartment.id}`}
                             >
                                 <li
                                     className="
@@ -202,7 +195,6 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                                 }
                                             </span>
                                         </p>
-                                        <p>{ apartment.id }</p>
                                         {
                                             apartment.amenities.length > 0 && (
                                                 <div className="mt-4">
@@ -216,18 +208,25 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                         ))}
                     </ul>
                 </div>
+                {/* Pagination next, previous and page buttons */}
                 <GetNextOrPrevPage
                     data={data}
                     isPlaceholderData={isPlaceholderData}
                     page={page}
-                    limit={limit}
                     setPage={setPage}
                 />
             </div>
         )
     }
 
-    return <></>
+    if (isSuccess && data && data.apartments.length === 0) {
+        return (
+            <p className="text-base">
+                Sorry, no properties match your search criteria. Please try adjusting your
+                filters or check back later for new listings.
+            </p>
+        )
+    }
 }
 
 export default PaginatedProperty;
