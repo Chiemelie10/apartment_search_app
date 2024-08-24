@@ -72,8 +72,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f'{self.id} {self.username}'
 
 GENDER_CHOICES = (
-    ('male', 'male'),
-    ('female', 'female')
+    ('male', 'Male'),
+    ('female', 'Female')
 )
 
 class UserProfile(models.Model):

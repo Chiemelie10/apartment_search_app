@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import MobileDropdown from "./MobileDropdown";
+import { X } from "react-feather";
 import {
     mobileAuthentication,
     mobileProperties,
@@ -59,7 +60,7 @@ const HambugerMenu = () => {
             {/* Overlay */}
             <div
                 className={
-                    `w-full min-h-screen absolute top-0 left-0 inset-0 bg-black
+                    `w-full min-h-screen fixed inset-0 bg-black
                     bg-opacity-50 lg:hidden transition-transform ease-in-out z-20
                     ${hasMounted ? "duration-500" : "duration-0"}
                     transform ${isOpen ? "translate-x-0" : "-translate-x-full"}`
@@ -69,7 +70,7 @@ const HambugerMenu = () => {
             {/* Side NavBar */}
             <div
                 className={
-                    `bg-blue-950 absolute top-0 left-0 w-[90%] xs:w-[85%] sm:w-[80%] md:w-3/4 h-full
+                    `bg-blue-950 fixed inset-0 w-[90%] xs:w-[85%] sm:w-[80%] md:w-3/4 h-full
                     px-4 py-2 lg:hidden overflow-y-auto flex flex-col z-30 text-base
                     transition-transform ease-in-out ${hasMounted ? "duration-300" : "duration-0"}
                     transform ${isOpen ? "translate-x-0" : "-translate-x-full"}`
@@ -80,9 +81,9 @@ const HambugerMenu = () => {
                     tabIndex={isOpen ? 0 : -1}
                     type="button"
                     onClick={closeSideNavbar}
-                    className="text-4xl md:text-5xl self-end text-white"
+                    className="self-end text-white"
                 >
-                    &times;
+                    <X className="my-2"/>
                 </button>
                 <nav 
                     className="mt-1 flex flex-col sm:items-center border-t-2

@@ -16,6 +16,7 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
         singularHeader, pluralHeader
     } = props;
 
+
     const pathname = usePathname();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -187,6 +188,8 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                             <span>{capitalize(apartment.city.name)}, </span>
                                             <span>{capitalize(apartment.state.name)}</span>
                                         </p>
+                                        <p>{apartment.listing_type}</p>
+                                        <p>{apartment.floor_number}</p>
                                         <p className="mt-4 font-bold">
                                             <span>
                                                 NGN {apartment.price} {

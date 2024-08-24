@@ -14,33 +14,57 @@ from amenity.models import Amenity
 User = get_user_model()
 
 LISTING_TYPE = (
-    ('self-contained', 'self-contained'),
-    ('non-self-contained', 'non-self-contained'),
-    ('flat', 'flat'),
-    ('bungalow', 'bungalow'),
-    ('duplex', 'duplex'),
+    ('self-contained', 'Self-contained'),
+    ('non-self-contained', 'Non-self-contained'),
+    ('flat', 'Flat'),
+    ('bungalow', 'Bungalow'),
+    ('duplex', 'Duplex'),
+)
+
+FLOOR_NUMBER = (
+    (0, 'Ground floor'),
+    (1, 'First floor'),
+    (2, 'Second floor'),
+    (3, 'Third floor'),
+    (4, 'Fourth floor'),
+    (5, 'Fifth floor'),
+    (6, 'Sixth floor'),
+    (7, 'Seventh floor'),
+    (8, 'Eighth floor'),
+    (9, 'Nineth floor'),
+    (10, 'Tenth floor'),
+    (11, 'Eleventh floor'),
+    (12, 'Twelfth floor'),
+    (13, 'Thirteenth floor'),
+    (14, 'Fourteenth floor'),
+    (15, 'Fifteenth floor'),
+    (16, 'Sixteenth floor'),
+    (17, 'Seventeenth floor'),
+    (18, 'Eighteenth floor'),
+    (19, 'Nineteenth floor'),
+    (20, 'Twentieth floor')
 )
 
 AVAILABLE_FOR = (
-    ('share', 'share'),
-    ('short let', 'short let'),
-    ('rent', 'rent'),
-    ('lease', 'lease'),
-    ('sale', 'sale'),
+    ('share', 'Share'),
+    ('short let', 'Short let'),
+    ('rent', 'Rent'),
+    ('lease', 'Lease'),
+    ('sale', 'Sale'),
 )
 
 PRICE_DURATION = (
-    ('hour', 'hour'),
-    ('day', 'day'),
-    ('week', 'week'),
-    ('month', 'month'),
-    ('year', 'year')
+    ('hour', 'Hour'),
+    ('day', 'Day'),
+    ('week', 'Week'),
+    ('month', 'Month'),
+    ('year', 'Year')
 )
 
 APPROVAL_STATUS_CHOICES = (
-    ('pending', 'pending'),
-    ('accepted', 'accepted'),
-    ('rejected', 'rejected')
+    ('pending', 'Pending'),
+    ('accepted', 'Accepted'),
+    ('rejected', 'Rejected')
 )
 
 class Apartment(models.Model):
@@ -60,6 +84,7 @@ class Apartment(models.Model):
     nearest_bus_stop = models.CharField(max_length=500)
     price = models.IntegerField()
     size = models.CharField(max_length=500, null=True, blank=True)
+    floor_number = models.IntegerField(choices=FLOOR_NUMBER, null=True, blank=True)
     listing_type = models.CharField(max_length=500, choices=LISTING_TYPE)
     available_for = models.CharField(max_length=500, choices=AVAILABLE_FOR)
     price_duration = models.CharField(max_length=500, choices=PRICE_DURATION)

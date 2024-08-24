@@ -3,16 +3,31 @@ import { UseMutateAsyncFunction } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import {
     SubmitHandler, FieldValues, UseFormRegister, DeepMap,
-    FieldErrors, DeepPartial, UseFormHandleSubmit, Control, Path,
+    FieldErrors, DeepPartial, UseFormHandleSubmit, Control, Path, UseFormSetValue, UseFormReset,
 } from "react-hook-form";
 
 declare global {
+    // Start of utils types
+
+    type FloorNumberData = {
+        id: number;
+        name: string;
+    }
+
+    // End of utils types
 
     // start of context types
     
     type SidebarContextType = {
         isOpen: boolean;
         setIsOpen: Dispatch<SetStateAction<boolean>>;
+    }
+
+    type SearchBarContextType = {
+        moreFilters: boolean;
+        setMoreFilters: Dispatch<SetStateAction<boolean>>;
+        searchedOption: string;
+        setSearchedOption: Dispatch<SetStateAction<string>>;
     }
     
     // End of context types
@@ -54,19 +69,23 @@ declare global {
     
     // Search form data type
     
-    type SearchFormAmenityData = {
-        amenity: string;
-        quantity: number;
-    }
-    
+    type SearchFormAmenityData = "Bedroom" | "Kitchen" | "Toilet" | "Bathroom" | "Garage"
+        | "Swimming pool" | "Furnished" | "Balcony" | "Veranda" | "Pets allowed"
+        | "Pets not allowed" | "Elavator" | "New building" | "Old building"
+
     type SearchFormData = {
-        available_for: string;
+        available_for: "sale" | "rent" | "share" | "short_let" | "lease" | "";
         state: string;
         city: string;
         school: string;
         listing_type: string;
         max_price: number | string;
         min_price: number | string;
+        max_room: number | string;
+        min_room: number | string;
+        max_floor_num: number | string;
+        min_floor_num: number | string;
+        floor: "Groud floor" | "Not ground floor" | "";
         amenities: SearchFormAmenityData[];
         sort_type: string;
     }
@@ -166,6 +185,7 @@ declare global {
         amenities: ServerApartmentAmenityData[];
         nearest_bus_stop: string;
         listing_type: string;
+        floor_number: number;
         title: string;
         description: string;
         price: number;
@@ -181,7 +201,7 @@ declare global {
         advert_exp_time?: Date;
         num_of_exp_time_extension?: number;
     }
-    
+
     type ApartmentData = {
         total_number_of_apartments: number;
         total_pages: number;
@@ -239,7 +259,23 @@ declare global {
     }
     
     type SearchBarProps = {
-        setPage?: Dispatch<SetStateAction<number>>;
+        setMoreFilters: Dispatch<SetStateAction<boolean>>;
+        handleSubmit: UseFormHandleSubmit<SearchFormData, undefined>;
+        register: UseFormRegister<SearchFormData>;
+        onSubmit: SubmitHandler<SearchFormData>;
+        setValue: UseFormSetValue<SearchFormData>;
+        states: { name: string; id: string; }[] | undefined;
+        cities: { name: string; id: string; }[];
+        selectedState: string;
+        selectedModalState: string; 
+        selectedModalCity: string;
+        selectedModalMinPrice: string | number;
+        selectedModalMaxPrice: string | number;
+        selectedModalSearchedOption: string;
+        priceRange: number[];
+        id: string;
+        searchedOption: string;
+        setSearchedOption: Dispatch<SetStateAction<string>>
     }
     
     type PaginatedPropertyProps = {
@@ -291,14 +327,19 @@ declare global {
     type SpinnerProps = {
         style?: SpinnerStyle<string>;
     }
+
+    type SelectStyle<T> = {
+        [key: string]: T;
+    }
     
     type SelectProps = {
         name: Path<SearchFormData>;
         register: UseFormRegister<SearchFormData>;
         id: string;
-        options: { name: string, id: string }[] | number[] | string[] | undefined;
+        options: { name: string, id: string }[] | number[] | string[] | FloorNumberData[] | undefined;
         disabled?: boolean;
         dataTestId: string;
+        style?: SelectStyle<string>;
     }
 
     type InputProps = {
@@ -306,8 +347,30 @@ declare global {
         name: Path<SearchFormData>;
         register: UseFormRegister<SearchFormData>;
         id: string;
+        dataTestId: string;
+        value?: string | number;
     }
-    
+
+    type ModalProps = {
+        moreFilters: boolean;
+        setMoreFilters: Dispatch<SetStateAction<boolean>>;
+        handleSubmit: UseFormHandleSubmit<SearchFormData, undefined>;
+        register: UseFormRegister<SearchFormData>;
+        onSubmit: SubmitHandler<SearchFormData>;
+        setValue: UseFormSetValue<SearchFormData>;
+        reset: UseFormReset<SearchFormData>;
+        states: { name: string; id: string; }[] | undefined;
+        cities: { name: string; id: string; }[];
+        selectedState: string;
+        selectedSearchBarState: string;
+        selectedSearchBarCity: string;
+        selectedSearchBarMinPrice: string | number;
+        selectedSearchBarMaxPrice: string | number;
+        selectedSearchBarSearchedOption: string;
+        priceRange: number[];
+        id: string;
+    }
+
     // End of components type
     
     // Start of hooks type
@@ -317,6 +380,11 @@ declare global {
         queryKey1: string;
         queryKey2?: string;
         url: string;
+    }
+
+    type useSearchBarProps = {
+        statesData: State[] | undefined;
+        setPage?: Dispatch<SetStateAction<number>> | undefined;
     }
     
     // End of hooks type

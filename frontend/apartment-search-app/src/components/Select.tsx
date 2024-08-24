@@ -3,7 +3,7 @@ import { capitalize } from "@/utils";
 
 
 const Select = (props: SelectProps) => {
-    const {register, name, options, disabled, dataTestId } = props;
+    const {register, name, options, disabled, dataTestId, style } = props;
     const pathname = usePathname();
 
     return (
@@ -11,12 +11,14 @@ const Select = (props: SelectProps) => {
             {...register(name)}
             disabled={disabled}
             data-testid={dataTestId}
+            style={style}
             className={`
                 ${pathname === "/" ?
-                    `h-8 sm:h-10 w-full px-2 py-0 sm:py-2 mt-2 rounded-sm
+                    `h-8 sm:h-10 w-full px-2 mt-2 rounded-md
+                    border-[1px] border-gray-400 border-solid
                     text-base ${disabled ? "" : "hover:cursor-pointer"}`
-                :   `h-8 sm:h-9 w-full px-2 py-0 sm:py-2 rounded-sm
-                    text-base bg-gray-200
+                :   `h-8 sm:h-9 w-full px-2 rounded-md
+                    text-base bg-gray-200 border-[1px] border-gray-400 border-solid
                     ${disabled ? "" : "hover:cursor-pointer"}`
             }`}
         >
@@ -26,7 +28,11 @@ const Select = (props: SelectProps) => {
                         pathname === "/" ? "Any"
                             : name === "min_price" ? "Price from"
                             : name === "max_price" ? "Price to"
-                            : name === "available_for" ? "Search option"
+                            : name === "available_for" ? "Search options"
+                            : name === "min_room" ? "Rooms from"
+                            : name === "max_room" ? "Rooms to"
+                            : name === "min_floor_num" ? "Floor from"
+                            : name === "max_floor_num" ? "Floor to"
                             : name === "sort_type" ? "Select..."
                             : capitalize(name)
                     }`

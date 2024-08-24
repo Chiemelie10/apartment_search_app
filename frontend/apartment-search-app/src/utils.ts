@@ -28,6 +28,32 @@ export const getListingType = (): string[] => {
     ]
 }
 
+export const getFloorNumbers = (): FloorNumberData[] => {
+    return [
+        { id : 0, name: "Ground floor" },
+        { id : 1, name : "First floor" },
+        { id : 2, name: "Second floor" },
+        { id : 3, name : "Third floor" },
+        { id : 4, name : "Fourth floor" },
+        { id : 5, name : "Fifth floor" },
+        { id : 6, name : "Sixth floor" },
+        { id : 7, name : "Seventh floor" },
+        { id : 8, name : "Eighth floor" },
+        { id : 9, name : "Nineth floor" },
+        { id : 10, name : "Tenth floor" },
+        { id : 11, name : "Eleventh floor" },
+        { id : 12, name : "Twelfth floor" },
+        { id : 13, name : "Thirteenth floor" },
+        { id : 14, name : "Fourteenth floor" },
+        { id : 15, name : "Fifteenth floor" },
+        { id : 16, name : "Sixteenth floor" },
+        { id : 17, name : "Seventeenth floor" },
+        { id : 18, name : "Eighteenth floor" },
+        { id : 19, name : "Nineteenth floor" },
+        { id : 20, name : "Twentieth floor" }
+    ]
+}
+
 export const capitalize = (value: string): string => {
     /*
         This function capitalizes the first character of a string.

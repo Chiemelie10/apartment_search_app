@@ -1,169 +1,76 @@
 "use client";
 
 import Select from "./Select";
-import { useId, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axiosInstance from "@/api/axios";
-import { getListingType, getPriceRange } from "@/utils";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SubmitHandler, useForm, useWatch } from "react-hook-form";
-import qs from "qs";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Search } from "react-feather";
+import { useEffect } from "react";
 
 
-const SearchBar = ({setPage}: SearchBarProps ) => {
+const SearchBar = (props: SearchBarProps ) => {
     // This component displays a searchbar on pages it is used in.
 
-    const [searchedOption, setSearchedOption] = useState("rent");
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const priceRange = getPriceRange(0, 10000000, 200000);
-    const listingType = getListingType();
-
-    /*
-        Fetches the values from API used to pupulate the options of the
-        select elements named state and city.
-    */
-    const {isError, error, data} = useQuery<State[], Error>({
-        queryKey: ["states"],
-        queryFn: async (): Promise<State[]> => {
-        const response = await axiosInstance.get<State[]>("/states/all");
-        return response.data
-        },
-        refetchOnWindowFocus: false,
-    });
-
     const {
-        register,
+        searchedOption,
+        setSearchedOption,
+        setMoreFilters,
         handleSubmit,
-        control,
-    } = useForm<SearchFormData>({
-        defaultValues: {
-            available_for: "",
-            state: "",
-            city: "",
-            school: "",
-            listing_type: "",
-            max_price: "",
-            min_price: "",
-            amenities: []
-        }
-    });
+        register,
+        setValue,
+        states,
+        cities,
+        selectedState,
+        selectedModalState,
+        selectedModalCity,
+        selectedModalMaxPrice,
+        selectedModalMinPrice,
+        selectedModalSearchedOption,
+        priceRange,
+        id,
+        onSubmit
+    } = props;
 
-    const selectedState = useWatch({control, name: "state"});
-    // const selectedCity = useWatch({control, name: "city"});
-    const selectedMinPrice = useWatch({control, name: "min_price"});
+    const pathname = usePathname();
 
-    /*
-        The map function is used to loop over the data returned from the API above
-        to get name and id of each state object.
-    */
-    const states = data?.map((state) => ({name: state.name, id: state.id}));
+    useEffect(() => {
+        setValue("state", selectedModalState)
+    }, [selectedModalState, setValue])
 
-    /*
-        The below code uses the find function to get an array containing state objects
-        that the state id matches the value returned by useWatch. In this case only one object
-        will be in the array since id is unique. The map function is then used to loop
-        over the cities array in the state object, returning an array of objects containing
-        the name and id of each city.
-    */
-    const cities = selectedState
-        ? data?.find((state) => state.id === selectedState)?.cities.map(
-            (city) => ({name: city.name, id: city.id})) || []
-        : [];
+    useEffect(() => {
+        setValue("city", selectedModalCity)
+    }, [selectedModalCity, setValue])
 
-    // const schools = selectedCity
-    //     ? data?.find((state) => state.name === selectedState)?.cities.find(
-    //         (city) => city.name === selectedCity)?.schools.map(
-    //             (school) =>({name: school.name, id: school.id})) || []
-    //     : [];
+    useEffect(() => {
+        setValue("min_price", selectedModalMinPrice)
+    }, [selectedModalMinPrice, setValue])
 
-    // The onSubmit function only runs when the search button of the form clicked.
-    const onSubmit: SubmitHandler<SearchFormData> = (data) => {
+    useEffect(() => {
+        setValue("max_price", selectedModalMaxPrice)
+    }, [selectedModalMaxPrice, setValue])
 
+    useEffect(() => {
         if (pathname === "/") {
-            /*
-                This block of code only runs on home page. it assigns the value of
-                searchedOption state to the created variable available_for.
-                available_for is the parameter name the API expects the query string to have.
-                The main purpose of the if block to assign the state value "buy" as "sale" to
-                available_for. The value sale is one of the values expected by the API for
-                the available_for parameter not buy.
-            */
-            let available_for = "";
-
-            if (searchedOption === "buy") {
-                available_for = "sale";
-            } else if (searchedOption === "rent") {
-                available_for = "rent";
-            } else if (searchedOption === "share") {
-                available_for = "share";
+            if (selectedModalSearchedOption === "rent" || selectedModalSearchedOption === "sale"
+                || selectedModalSearchedOption === "share") {
+                setSearchedOption(selectedModalSearchedOption);
             }
-
-            /*
-                available_for is added to the data, converted to string and used to construct the
-                pathname and query string passed to router.push()
-            */
-            data.available_for = available_for;
-            const queryString = qs.stringify(data);
-            router.push(`/search/${searchedOption}?${queryString}`);
-        } else  {
-            /*
-                This block of code runs in pages that uses the SearchBar component
-                except the home page. Unlike in the block above, the value of available_for
-                is not gotten from the state, searchedOption. This is because there is a
-                select element with that name included in the form when SearchBar component is used
-                in pages that are not the home page. The purpose of the if and else if blocks
-                are to covert values of available_for, from the form, to the appropriate values
-                that matches the expected search routes and assigning it to searchedOption variable.
-                Note that "searchedOption" in this block is not the one declared for state at the
-                beginning of the component.
-            */
-
-            const available_for = data.available_for
-            let searchedOption = "";
-
-            if (available_for === "sale") {
-                searchedOption = "buy"
-            } else if (available_for === "rent") {
-                searchedOption = "rent"
-            } else if (available_for === "share") {
-                searchedOption = "share"
-            } else if (available_for === "lease") {
-                searchedOption = "lease"
-            } else if (available_for === "short_let") {
-                searchedOption = "short-let"
+        } else {
+            if (selectedModalSearchedOption === "rent" || selectedModalSearchedOption === "sale"
+                || selectedModalSearchedOption === "share" || selectedModalSearchedOption === "lease"
+                || selectedModalSearchedOption === "short_let" || selectedModalSearchedOption === "") {
+                setValue("available_for", selectedModalSearchedOption);
             }
-
-            // Converts the object "data" to string 
-            const queryString = qs.stringify(data);
-
-            /*
-                Resets the page state to 1. If not done page maintains the current state
-                after the search button has been clicked and new page rendered. It
-                ensures API request for page 1 is always made.
-            */
-            if (setPage) {
-                setPage(1)
-            }
-
-            /*
-                router.push() navigates to a new route if for example pathname, searchedOption,
-                was changed from rent to buy in the new search.
-                It remains in the same route if only query string changes.
-                The key thing is it trigers the re-render of the search results page
-                which results in fresh request to the API using useQuery and axios.
-            */
-            router.push(`/search/${searchedOption}?${queryString}`);
         }
+    }, [selectedModalSearchedOption, setSearchedOption])
+
+    const handleMoreFilterClick = () => {
+        setMoreFilters(true);
+        document.body.style.overflow = "hidden";
     }
 
-    const id = useId();
 
     return (
-        <div className="flex flex-col text-base">
+        <div className="flex flex-col text-base relative">
             {
                 pathname === "/" && (
                     <div className="self-center mb-14">
@@ -175,6 +82,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                     </div>
                 )
             }
+            {/* Searchbar */}
             <div
                 className={`
                     w-full flex flex-col justify-start items-center
@@ -182,6 +90,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                 `}
             >
                 {
+                    // Search options design for only home page
                     pathname === "/" && (
                         <div className="md:self-start h-16 bg-blue-950 rounded-t-xl
                             border-b-[1px] border-solid border-b-gray-500"
@@ -191,7 +100,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                             >
                                 <li
                                     className={`min-w-[78px] rounded-tl-xl hover:opacity-80
-                                        ${searchedOption === "buy"
+                                        ${searchedOption === "sale"
                                             ? "bg-cyan-300 text-black" : ""
                                         }
                                     `}
@@ -199,7 +108,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                     <Link
                                         href=""
                                         data-testid="SearchBar-buy"
-                                        onClick={() => setSearchedOption("buy")}
+                                        onClick={() => setSearchedOption("sale")}
                                         className="w-full h-full flex justify-center items-center"
                                         >
                                             Buy
@@ -240,6 +149,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                         </div>
                     )
                 }
+                {/* Search form */}
                 <form
                     id={`SearchBar-form-${id}`}
                     data-testid="SearchBar-form"
@@ -255,6 +165,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                     }`}
                 >
                     {
+                        // Search options select element for pages that are not home page.
                         pathname != "/" && (
                             <div className="mb-5 lg:mb-0 w-fit">
                                 <Select
@@ -268,6 +179,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                             </div>
                         )
                     }
+                    {/* Container for state and city select elements */}
                     <div
                         className={`
                             ${pathname === "/" ?
@@ -281,7 +193,8 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 pathname === "/" && (
                                     <label
                                         htmlFor={`state-${id}`}
-                                        className="text-white font-medium">
+                                        className="text-white font-medium"
+                                    >
                                             State
                                     </label>
                                 )
@@ -300,7 +213,8 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 pathname === "/" && (
                                     <label
                                         htmlFor={`city-${id}`}
-                                        className="text-white font-medium">
+                                        className="text-white font-medium"
+                                    >
                                             City
                                     </label>
                                 )
@@ -315,6 +229,7 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                             />
                         </div>
                     </div>
+                    {/* Container for max and min price select elements */}
                     <div
                         className={`
                             ${pathname === "/" ?
@@ -327,7 +242,8 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 pathname === "/" && (
                                     <label
                                         htmlFor={`min-price-${id}`}
-                                        className="text-white font-medium">
+                                        className="text-white font-medium"
+                                    >
                                             Price from
                                     </label>
                                 )
@@ -348,7 +264,8 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 pathname === "/" && (
                                     <label
                                         htmlFor={`max-price-${id}`}
-                                        className="text-white font-medium">
+                                        className="text-white font-medium"
+                                    >
                                             Price to
                                     </label>
                                 )
@@ -359,9 +276,10 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                                 id={`max_price-${id}`}
                                 dataTestId="SearchBar-max_price"
                                 options={priceRange}
-                                />
+                            />
                         </div>
                     </div>
+                    {/* Container for more filters and search buttons */}
                     <div
                         className={`
                             ${pathname === "/" ?
@@ -373,6 +291,8 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                             id={`more-filters-${id}`}
                             data-testid="SearchBar-more-filters"
                             name="more filters"
+                            onClick={handleMoreFilterClick}
+                            type="button"
                             className={`
                                 ${pathname === "/" ?
                                     "w-[49%] lg:w-[43%] lg:max-w-72 lg:min-w-24"
@@ -420,20 +340,6 @@ const SearchBar = ({setPage}: SearchBarProps ) => {
                             </button>
                         </div>
                     </div>
-                    {/* <div className="flex flex-col">
-                        <label
-                            htmlFor={`listing-type-${id}`}
-                            className="text-white font-medium">
-                                Listing type
-                        </label>
-                        <Select
-                            register={register}
-                            name="listing_type"
-                            id={`listing-type-${id}`}
-                            options={listingType}
-                            disabled={false}
-                        />
-                    </div> */}
                 </form>
             </div>
         </div>

@@ -48,6 +48,8 @@ class ApartmentSearchView(APIView):
         available_for = all_params.get('available_for')
         sort_type = all_params.get('sort_type')
         amenities = all_params.get('apartmentamenity_set')
+        min_floor_num = all_params.get('min_floor_num')
+        max_floor_num = all_params.get('max_floor_num')
 
         apartments = Apartment.objects.filter(
             is_taken=False,
@@ -75,10 +77,20 @@ class ApartmentSearchView(APIView):
 
         if min_price is not None and min_price != "" and max_price is not None and max_price != "":
             apartments = apartments.filter(price__range=(min_price, max_price))
-        elif min_price is None or min_price == "" and max_price is not None and max_price != "":
+        elif (min_price is None or min_price == "") and max_price is not None and max_price != "":
             apartments = apartments.filter(price__lte=max_price)
-        elif min_price is not None and min_price != "" and max_price is None or max_price == "":
+        elif min_price is not None and min_price != "" and (max_price is None or max_price == ""):
             apartments = apartments.filter(price__gte=min_price)
+
+        if min_floor_num is not None and min_floor_num != "" \
+            and max_floor_num is not None and max_floor_num != "":
+            apartments = apartments.filter(floor_number__range=(min_floor_num, max_floor_num))
+        elif (min_floor_num is None or min_floor_num == "") \
+            and max_floor_num is not None and max_floor_num != "":
+            apartments = apartments.filter(floor_number__lte=max_floor_num)
+        elif min_floor_num is not None and min_floor_num != "" \
+            and (max_floor_num is None or max_floor_num == ""):
+            apartments = apartments.filter(floor_number__gte=min_floor_num)
 
         if amenities is not None and amenities != "":
             for amenity in amenities:

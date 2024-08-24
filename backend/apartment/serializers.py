@@ -111,6 +111,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
             'nearest_bus_stop',
             'listing_type',
             'size',
+            'floor_number',
             'available_for',
             'price_duration',
             'title',
