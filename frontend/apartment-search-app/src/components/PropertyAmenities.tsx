@@ -4,6 +4,10 @@ import GarageIcon from "../../public/images/garage_icon.svg";
 import SwimmingPoolIcon from "../../public/images/swimming_pool_icon.svg";
 import ToiletIcon from "../../public/images/toilet_icon.svg";
 import MicrowaveIcon from "../../public/images/kitchen_microwave_icon.svg";
+import building from "../../public/images/old-building-icon.svg";
+import pets from "../../public/images/pets-icon.svg";
+import noPets from "../../public/images/no-pets-icon.svg";
+import balcony from "../../public/images/balcony-window-icon.svg";
 import { capitalize } from "@/utils";
 
 
@@ -16,6 +20,12 @@ const PropertyAmenities = ({amenities}: PropertyAmenitiesProp) => {
         kitchen: MicrowaveIcon,
         "swimming pool": SwimmingPoolIcon,
         toilet: ToiletIcon,
+        "new building": building,
+        "old building": building,
+        balcony: balcony,
+        veranda: balcony,
+        "pets allowed": pets,
+        "pets not allowed": noPets,
         none: ""
     }
 

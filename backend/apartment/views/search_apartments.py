@@ -38,6 +38,12 @@ class ApartmentSearchView(APIView):
 
         all_params = request.GET.dict()
 
+        # save all amenities from request to a list.
+        amenities = []
+        for key in all_params:
+            if key.startswith('amenities'):
+                amenities.append(all_params[key])
+
         country = all_params.get('country')
         state = all_params.get('state')
         city = all_params.get('city')
@@ -47,7 +53,6 @@ class ApartmentSearchView(APIView):
         min_price = all_params.get('min_price')
         available_for = all_params.get('available_for')
         sort_type = all_params.get('sort_type')
-        amenities = all_params.get('apartmentamenity_set')
         min_floor_num = all_params.get('min_floor_num')
         max_floor_num = all_params.get('max_floor_num')
 
@@ -92,25 +97,11 @@ class ApartmentSearchView(APIView):
             and (max_floor_num is None or max_floor_num == ""):
             apartments = apartments.filter(floor_number__gte=min_floor_num)
 
-        if amenities is not None and amenities != "":
-            for amenity in amenities:
-                amenity_obj = amenity.get('amenity')
-                amenity_quantity = amenity.get('quantity')
-                if amenity is not None:
-                    try:
-                        if amenity_quantity is not None:
-                            amenity_quantity = int(amenity_quantity)
-                            apartments = apartments.filter(
-                                amenities__id=amenity_obj.id,
-                                apartmentamenity__quantity=amenity_quantity
-                            )
-                        else:
-                            apartments = apartments.filter(amenities__id=amenity_obj.id)
-                    except ValueError:
-                        return Response(
-                            {'error': 'The value for "amenity" and "quantity" must be numbers.'},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
+        if amenities:
+            apartments = apartments.filter(amenities__name__in=amenities).distinct()
+
+            for amenity_name in amenities:
+                apartments = apartments.filter(amenities__name=amenity_name)
 
         # Order the apartments queryset by inverse of created_at
         if sort_type is None or sort_type == '':

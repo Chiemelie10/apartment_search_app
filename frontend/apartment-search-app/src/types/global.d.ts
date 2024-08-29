@@ -28,6 +28,8 @@ declare global {
         setMoreFilters: Dispatch<SetStateAction<boolean>>;
         searchedOption: string;
         setSearchedOption: Dispatch<SetStateAction<string>>;
+        sortType: string;
+        setSortType: Dispatch<SetStateAction<string>>;
     }
     
     // End of context types
@@ -132,7 +134,8 @@ declare global {
     }
     
     type AmenityName = "bedroom" | "bathroom" | "kitchen" | "swimming pool" | "toilet"
-        | "garage" | "none";
+        | "garage" | "none" | "pets allowed" | "pets not allowed" | "new building"
+        | "old building" | "balcony" | "veranda";
     
     type Amenity = {
         id: string;

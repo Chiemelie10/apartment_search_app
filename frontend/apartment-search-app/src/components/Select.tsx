@@ -29,6 +29,7 @@ const Select = (props: SelectProps) => {
                             : name === "min_price" ? "Price from"
                             : name === "max_price" ? "Price to"
                             : name === "available_for" ? "Search options"
+                            : name === "listing_type" ? "Listing type"
                             : name === "min_room" ? "Rooms from"
                             : name === "max_room" ? "Rooms to"
                             : name === "min_floor_num" ? "Floor from"

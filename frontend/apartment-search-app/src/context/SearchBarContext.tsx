@@ -1,7 +1,6 @@
 "use client";
 
-import { ReactNode, createContext, useId, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { ReactNode, createContext, useState } from "react";
 
 
 const SearchBarContext = createContext<SearchBarContextType | undefined>(undefined);
@@ -9,11 +8,13 @@ const SearchBarContext = createContext<SearchBarContextType | undefined>(undefin
 export const SearchBarContextProvider = ({children} : {children: ReactNode}) => {
     const [moreFilters, setMoreFilters] = useState(false);
     const [searchedOption, setSearchedOption] = useState("rent");
+    const [sortType, setSortType] = useState("");
 
 
     return (
         <SearchBarContext.Provider value={{
-                moreFilters, setMoreFilters, searchedOption, setSearchedOption
+                moreFilters, setMoreFilters, searchedOption, setSearchedOption,
+                sortType, setSortType
             }}
         >
             {children}

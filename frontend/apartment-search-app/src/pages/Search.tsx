@@ -61,6 +61,7 @@ const Search = ({singularHeading, pluralHeading}: SearchPageProps) => {
         selectedMinPrice: searchBarSelectedMinPrice,
         selectedSearchOption: searchBarSelectedSearchOption,
         priceRange: searchBarPriceRange,
+        sortType: searchbarSortType,
         id: searchBarId,
         onSubmit: searchBarOnSubmit
     } = useSearchBar({ statesData });
@@ -78,6 +79,7 @@ const Search = ({singularHeading, pluralHeading}: SearchPageProps) => {
         selectedMinPrice: modalSelectedMinPrice,
         selectedSearchOption: modalSelectedSearchOption,
         priceRange: modalPriceRange,
+        sortType: modalSortType,
         id: modalId,
         onSubmit: modalOnSubmit
     } = useSearchBar({ statesData });
@@ -144,6 +146,8 @@ const Search = ({singularHeading, pluralHeading}: SearchPageProps) => {
                     page={page}
                     setPage={setPage}
                     limit={limit}
+                    searchBarSortType={searchbarSortType}
+                    modalSortType={modalSortType}
                 />
             </section>
         </div>

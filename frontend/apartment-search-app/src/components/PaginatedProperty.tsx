@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Select from "./Select";
 import { useForm, useWatch } from "react-hook-form";
 import { useEffect, useId } from "react";
+import useSearchBarContext from "@/hooks/useSearchBarContext";
 
 
 const PaginatedProperty = (props: PaginatedPropertyProps) => {
@@ -20,6 +21,7 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
     const pathname = usePathname();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { setSortType } = useSearchBarContext();
 
     const {register, control} = useForm<SearchFormData>({
         defaultValues: {
@@ -45,6 +47,9 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
 
             // Converts params from object to string
             const sortQueryString = params.toString()
+
+            // Update the sortType state which is added to the query string on any form submission.
+            setSortType(selectedSortType);
 
             /*
                 Resets the page state to 1. If not done page maintains the current state

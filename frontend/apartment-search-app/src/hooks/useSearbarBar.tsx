@@ -10,7 +10,7 @@ import { useEffect, useId } from "react";
 
 const useSearchBar = ({ statesData, setPage }: useSearchBarProps) => {
     const router = useRouter();
-    const { searchedOption, moreFilters, setMoreFilters } = useSearchBarContext();
+    const { searchedOption, moreFilters, sortType, setMoreFilters } = useSearchBarContext();
 
     const pathname = usePathname();
     const id = useId();
@@ -101,7 +101,13 @@ const useSearchBar = ({ statesData, setPage }: useSearchBarProps) => {
                 || searchedOption == "share" || searchedOption == "short_let" || searchedOption == "lease") {
                     formData.available_for = searchedOption;
                 }
-            const queryString = qs.stringify(formData);
+
+            let queryString = qs.stringify(formData);
+
+            // Add sort type selected by user to formData
+            if (sortType) {
+                queryString = `${queryString}&sort_type=${sortType}`
+            }
 
             // Changed the value from sale to buy to match the route pathname "/search/buy?..."
             if (available_for === "sale") {
@@ -143,7 +149,12 @@ const useSearchBar = ({ statesData, setPage }: useSearchBarProps) => {
             }
 
             // Converts the object "formData" to string 
-            const queryString = qs.stringify(formData);
+            let queryString = qs.stringify(formData);
+
+            // Add sort type selected by user to formData
+            if (sortType) {
+                queryString = `${queryString}&sort_type=${sortType}`
+            }
 
             /*
                 Resets the page state to 1. If not done page maintains the current state
@@ -166,7 +177,7 @@ const useSearchBar = ({ statesData, setPage }: useSearchBarProps) => {
     return {
         states, cities, selectedState, priceRange, listingType, reset,
         id, onSubmit, setValue, handleSubmit, register, selectedCity,
-        selectedMaxPrice, selectedMinPrice, selectedSearchOption
+        selectedMaxPrice, selectedMinPrice, selectedSearchOption, sortType
     }
 }
 
