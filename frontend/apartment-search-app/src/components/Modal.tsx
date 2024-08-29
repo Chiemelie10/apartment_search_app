@@ -137,6 +137,7 @@ const Modal = (props: ModalProps) => {
                                             options={["sale", "rent", "share", "short_let", "lease"]}
                                             disabled={false}
                                             style={{height: "3rem", backgroundColor: "white"}}
+                                            firstOptionLabel="Any"
                                         />
                                     </div>
                                     {/* Container for state, city, price and room number */}
@@ -155,6 +156,7 @@ const Modal = (props: ModalProps) => {
                                                 options={states}
                                                 disabled={false}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                         <div className="flex flex-col">
@@ -170,6 +172,7 @@ const Modal = (props: ModalProps) => {
                                                 dataTestId="SearchBar-city"
                                                 options={cities}
                                                 disabled={!selectedState}
+                                                firstOptionLabel="Any"
                                                 style={{
                                                     height: "3rem",
                                                     backgroundColor: selectedState ? "white" : "#e2e8f0"
@@ -190,6 +193,7 @@ const Modal = (props: ModalProps) => {
                                                 options={priceRange}
                                                 disabled={false}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                         <div
@@ -207,6 +211,7 @@ const Modal = (props: ModalProps) => {
                                                 dataTestId="SearchBar-max_price"
                                                 options={priceRange}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                         <div
@@ -224,6 +229,7 @@ const Modal = (props: ModalProps) => {
                                                 dataTestId="SearchBar-min_room"
                                                 options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                         <div
@@ -241,6 +247,7 @@ const Modal = (props: ModalProps) => {
                                                 dataTestId="SearchBar-max_room"
                                                 options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                         <div className="flex flex-col">
@@ -256,6 +263,7 @@ const Modal = (props: ModalProps) => {
                                                 dataTestId="SearchBar-min_floor_num"
                                                 options={floorNumbers}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                         <div className="flex flex-col">
@@ -271,6 +279,7 @@ const Modal = (props: ModalProps) => {
                                                 dataTestId="SearchBar-max_floor_num"
                                                 options={floorNumbers}
                                                 style={{height: "3rem", backgroundColor: "white"}}
+                                                firstOptionLabel="Any"
                                             />
                                         </div>
                                     </div>
@@ -287,6 +296,7 @@ const Modal = (props: ModalProps) => {
                                             dataTestId="SearchBar-listing_type"
                                             options={listingType}
                                             style={{height: "3rem", backgroundColor: "white"}}
+                                            firstOptionLabel="Any"
                                         />
                                     </div>
                                     {/* Features and Amenities container */}

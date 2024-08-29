@@ -3,7 +3,7 @@ import { capitalize } from "@/utils";
 
 
 const Select = (props: SelectProps) => {
-    const {register, name, options, disabled, dataTestId, style } = props;
+    const {register, name, options, disabled, dataTestId, style, firstOptionLabel } = props;
     const pathname = usePathname();
 
     return (
@@ -26,6 +26,7 @@ const Select = (props: SelectProps) => {
                 {
                     `${
                         pathname === "/" ? "Any"
+                            : firstOptionLabel ? firstOptionLabel
                             : name === "min_price" ? "Price from"
                             : name === "max_price" ? "Price to"
                             : name === "available_for" ? "Search options"

@@ -343,6 +343,7 @@ declare global {
         disabled?: boolean;
         dataTestId: string;
         style?: SelectStyle<string>;
+        firstOptionLabel?: string;
     }
 
     type InputProps = {
