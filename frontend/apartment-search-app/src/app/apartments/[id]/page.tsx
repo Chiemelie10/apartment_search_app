@@ -1,9 +1,9 @@
+import Apartment from "@/pages/Apartment";
+
 const SingleApartmentPage = () => {
-    return (
-      <div>
-        <h1>Single apartment page</h1>
-      </div>
-    )
-  }
+  return (
+    <Apartment />
+  )
+}
   
-  export default SingleApartmentPage;
+export default SingleApartmentPage;

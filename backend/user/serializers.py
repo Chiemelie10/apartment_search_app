@@ -36,12 +36,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
     # pylint: disable=no-member
     interests = UserProfileInterestSerializer(
-            required=True,
-            many=True,
-            source='userprofileinterest_set'
+        required=True,
+        many=True,
+        source='userprofileinterest_set'
     )
     phone_number = serializers.CharField(required=True, allow_null=True)
+    whatsapp_number = serializers.CharField(required=True, allow_null=True)
     gender = serializers.CharField(required=True, allow_null=True)
+    religion = serializers.CharField(required=True, allow_null=True)
     first_name = serializers.CharField(required=True, allow_null=True)
     last_name = serializers.CharField(required=True, allow_null=True)
     thumbnail=serializers.ImageField(required=True, allow_null=True)
@@ -57,8 +59,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = [
             'gender',
+            'religion',
             'phone_number',
+            'whatsapp_number',
             'phone_number_is_verified',
+            'whatsapp_number_is_verified',
             'interests',
             'thumbnail',
             'remove_thumbnail',
@@ -127,41 +132,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 'Only numbers must be used.'
             )
 
-        if len(validated_value) < 11 or len(validated_value) == 12 or len(validated_value) > 14:
+        if len(validated_value) < 11 or len(validated_value) == 12 or len(validated_value) > 13:
             raise serializers.ValidationError(
                 'The number of digits for the phone number entered '\
-                'cannot less than 11, exactly 12, or greater than 14.'
+                'cannot less than 11, exactly 12, or greater than 13.'
             )
-
-        # Validate phone numbers that start with +
-        new_value = None
-
-        if validated_value.startswith('+'):
-            new_value = validated_value.replace('+', '', 1)
-            if len(new_value) != 13 or new_value.startswith('234') is False:
-                raise serializers.ValidationError(
-                    'The country code for Nigeria phone numbers must be used.'
-                )
-            if new_value.isdigit() is False:
-                raise serializers.ValidationError(
-                    'Only numbers must follow the "+" sign.'
-                )
-
-        if new_value:
-            accepted_value = new_value.replace('234', '+234', 1)
-            return accepted_value
 
         # Validate phone numbers without plus
-        if validated_value.isdigit() is False:
-            raise serializers.ValidationError(
-                'Only numbers can be used.'
-            )
-
-        if len(validated_value) != 11 and len(validated_value) != 13:
-            raise serializers.ValidationError(
-                'The number of digits for the phone number entered must be exactly 11 or 13.'
-            )
-
         if len(validated_value) == 11 and validated_value.startswith('0') is False:
             raise serializers.ValidationError(
                 'The phone number must start with "0" when the number '\
@@ -175,9 +152,51 @@ class UserProfileSerializer(serializers.ModelSerializer):
             )
 
         if len(validated_value) == 11:
-            accepted_value = validated_value.replace('0', '+234', 1)
+            accepted_value = validated_value.replace('0', '234', 1)
         elif len(validated_value) == 13:
-            accepted_value = validated_value.replace('234', '+234', 1)
+            accepted_value = validated_value
+
+        return accepted_value
+
+    def validate_whatsapp_number(self, phone_number):
+        """This method does extra validation on the phone_number field."""
+        if phone_number is None:
+            return None
+
+        # Check for html tags in submitted phone number.
+        is_html_in_value, validated_value = check_html_tags(phone_number)
+
+        if is_html_in_value is True:
+            raise serializers.ValidationError('html tags or anything similar is not allowed.')
+
+        if validated_value.isdigit() is False:
+            raise serializers.ValidationError(
+                'Only numbers must be used.'
+            )
+
+        if len(validated_value) < 11 or len(validated_value) == 12 or len(validated_value) > 13:
+            raise serializers.ValidationError(
+                'The number of digits for the phone number entered '\
+                'cannot less than 11, exactly 12, or greater than 13.'
+            )
+
+        # Validate phone numbers without plus
+        if len(validated_value) == 11 and validated_value.startswith('0') is False:
+            raise serializers.ValidationError(
+                'The phone number must start with "0" when the number '\
+                'of digits for the phone number is 11.'
+            )
+
+        if len(validated_value) == 13 and validated_value.startswith('234') is False:
+            raise serializers.ValidationError(
+                'The phone number must start with "234" when the number '\
+                'of digits for the phone number is 13.'
+            )
+
+        if len(validated_value) == 11:
+            accepted_value = validated_value.replace('0', '234', 1)
+        elif len(validated_value) == 13:
+            accepted_value = validated_value
 
         return accepted_value
 
@@ -286,8 +305,8 @@ class UserSerializer(serializers.ModelSerializer):
                 'last_login',
                 'groups',
                 'user_permissions',
-                'phone_number',
                 'phone_number_is_verified',
+                'whatsapp_number_is_verified',
                 'first_name',
                 'last_name'
             ]

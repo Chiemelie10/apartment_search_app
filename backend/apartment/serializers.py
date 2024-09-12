@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from user.utils import check_html_tags, resize_image
+from user.serializers import UserSerializer
 from image.serializers import ImageSerializer
 from image.models import Image
 from country.models import Country
@@ -16,8 +17,9 @@ from school.models import School
 from school.serializers import SchoolModelSerializer
 from amenity.models import Amenity
 from amenity.serializers import AmenityModelSerializer
-from user.serializers import UserSerializer
-from .models import Apartment, ApartmentAmenity
+from user_preferred_qualities.serializers import UserPreferredQualitySerializer
+from user_preferred_qualities.models import UserPreferredQuality
+from .models import Apartment, ApartmentAmenity, ApartmentUserPreferredQuality
 
 
 class ApartmentAmenitySerializer(serializers.ModelSerializer):
@@ -37,6 +39,23 @@ class ApartmentAmenitySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ApartmentUserPreferredQualitySerializer(serializers.ModelSerializer):
+    """
+    This class defines class attributes of the ApartmentUserPreferredQuality model
+    to be validated when a request is made.
+    """
+    # pylint: disable=no-member
+    apartment = serializers.PrimaryKeyRelatedField(read_only=True)
+    user_preferred_quality = UserPreferredQualitySerializer(required=True)
+    class Meta:
+        """
+            model: Name of the model.
+            fields: The class attributes of the named model to be validated or serialized.
+        """
+        model = ApartmentUserPreferredQuality
+        fields = '__all__'
+
+
 class ApartmentSerializer(serializers.ModelSerializer):
     """This class defines the fields of the Apartment model to be validated and serialized."""
     # pylint: disable=no-member
@@ -49,26 +68,9 @@ class ApartmentSerializer(serializers.ModelSerializer):
     is_taken_time = serializers.DateTimeField(read_only=True)
     is_taken_number = serializers.IntegerField(read_only=True)
     user = UserSerializer(required=False)
-    # country = serializers.PrimaryKeyRelatedField(
-    #     required=True,
-    #     queryset=Country.objects.prefetch_related('apartments').all()
-    # )
     country = CountrySerializer(required=True)
-    # state = serializers.PrimaryKeyRelatedField(
-    #     required=True,
-    #     queryset=State.objects.prefetch_related('apartments').all()
-    # )
     state = StateSerializer(required=True)
-    # city = serializers.PrimaryKeyRelatedField(
-    #     required=True,
-    #     queryset=City.objects.prefetch_related('apartments').all()
-    # )
     city = CitySerializer(required=True)
-    # school = serializers.PrimaryKeyRelatedField(
-    #     required=False,
-    #     allow_null=True,
-    #     queryset=School.objects.prefetch_related('apartments').all()
-    # )
     school = SchoolModelSerializer(required=False)
     image_upload = serializers.ListField(
         required = False,
@@ -91,6 +93,13 @@ class ApartmentSerializer(serializers.ModelSerializer):
             source='apartmentamenity_set',
             allow_null=True
     )
+    user_preferred_qualities = ApartmentUserPreferredQualitySerializer(
+        required=False,
+        many=True,
+        allow_empty=True,
+        source='apartmentuserpreferredquality_set',
+        allow_null=True
+    )
     price = serializers.IntegerField(min_value=0, required=True)
 
     class Meta:
@@ -107,8 +116,10 @@ class ApartmentSerializer(serializers.ModelSerializer):
             'state',
             'city',
             'amenities',
+            'user_preferred_qualities',
             'school',
             'nearest_bus_stop',
+            'address',
             'listing_type',
             'size',
             'floor_number',
@@ -339,24 +350,29 @@ class ApartmentSerializer(serializers.ModelSerializer):
         for amenity in amenities:
             value = amenity.get('amenity')
             quantity = amenity.get('quantity')
-            if quantity is None:
+            if quantity is None and (
+                value.name.lower() == "bedroom" or value.name.lower() == "bathroom"
+                or value.name.lower() == "kitchen" or value.name.lower() == "toilet"
+                or value.name.lower() == "swimming pool"):
                 raise serializers.ValidationError(
-                    'The field "quantity" is required.'
+                    f'Number of {value.name.lower()}s is required.'
                 )
             if value.name.lower() == 'none':
                 if len(amenities) > 1:
                     raise serializers.ValidationError(
-                        'There cannot be more than one amenity when "None" is entered.'
+                        'There cannot be more than one amenity when "None" is selected.'
                     )
-                if quantity != 0:
-                    raise serializers.ValidationError(
-                        'The value of quantity must be zero when amenity is none.'
-                    )
+                if quantity is not None and quantity != 0:
+                    # raise serializers.ValidationError(
+                    #     'The value of quantity must be zero when amenity is none.'
+                    # )
+                    quantity = 0
             if value.name.lower() != 'none':
                 if quantity <= 0:
-                    raise serializers.ValidationError(
-                        'The value of quantity must be greater than zero when amenity is not none.'
-                    )
+                    # raise serializers.ValidationError(
+                    #     'The value of quantity must be greater than zero when amenity is not none.'
+                    # )
+                    quantity = 1
 
         # Add none to list of amenities if empty list was submitted.
         if amenities == []:
@@ -364,6 +380,26 @@ class ApartmentSerializer(serializers.ModelSerializer):
             amenities.append({'amenity': amenity, 'quantity': 0})
 
         return amenities
+    
+    def validate_user_preferred_qualities(self, user_preferred_qualities):
+        """This method does extra validation on the user_preferred_qualites field."""
+        if user_preferred_qualities is None:
+            user_preferred_qualities = []
+
+        for preferred_quality in user_preferred_qualities:
+            value = preferred_quality.get('user_preferred_quality')
+            if value.name.lower() == 'none':
+                if len(user_preferred_qualities) > 1:
+                    raise serializers.ValidationError(
+                        'There cannot be more than one user preferred quality when "none" is entered.'
+                    )
+
+        # Add none to list of user_preferred_qualities if empty list was submitted.
+        if user_preferred_qualities == []:
+            user_preferred_quality = UserPreferredQuality.objects.get(name='None')
+            user_preferred_qualities.append({'user_preferred_quality': user_preferred_quality})
+
+        return user_preferred_qualities
 
     def validate_title(self, title):
         """This method does extra validation on the title field."""

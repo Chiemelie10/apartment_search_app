@@ -66,6 +66,24 @@ export const capitalize = (value: string): string => {
     return capitalizedValue;
 }
 
+export const isServerApartmentData = (apartment: any): apartment is ServerApartmentData => {
+    /*
+        This function returns a bool depending on type of apartment.
+        It returns true if type of apartment is ServerApartment, otherwise it returns false.
+        It is used in the apartments/[id] page to check if type of apartment is
+        ServerApartment or {}.
+    */
+    return (apartment as ServerApartmentData).id !== undefined;
+}
+
+export const getYouTubeVideoId = (url: string): string => {
+    const urlObj = new URL(url);
+    const youTubeVideoId = urlObj.searchParams.get("v");
+
+    if (youTubeVideoId) return youTubeVideoId;
+    return "";
+}
+
 export const getPaginationIndices = (limit: number, page: number, data: ApartmentData) => {
     /*
         Description: This function is useful for pagination. It returns the starting

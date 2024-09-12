@@ -8,6 +8,7 @@ import Select from "./Select";
 import { useForm, useWatch } from "react-hook-form";
 import { useEffect, useId } from "react";
 import useSearchBarContext from "@/hooks/useSearchBarContext";
+import qs from "qs";
 
 
 const PaginatedProperty = (props: PaginatedPropertyProps) => {
@@ -69,6 +70,11 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
             router.push(`/search/${searchedOption}?${sortQueryString}`);
         }
     }, [selectedSortType, router])
+
+    const onApartmentCardClick = (apartment: ServerApartmentData) => {
+        sessionStorage.setItem("selectedApartment", qs.stringify(apartment));
+        router.push(`/apartments/${apartment.id}`);
+    }
 
     const id = useId();
 
@@ -167,10 +173,10 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                             gap-14"
                     >
                         {data?.apartments?.map((apartment) => (
-                            <Link
-                                href={`/apartment/${apartment.id}`}
+                            <div
+                                onClick={() => onApartmentCardClick(apartment)}
                                 key={apartment.id}
-                                className="inline-block"
+                                className="inline-block hover:cursor-pointer"
                                 data-testid={`${apartment.id}`}
                                 id={`${apartment.id}`}
                             >
@@ -186,18 +192,16 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                         <ImageCarousel images={apartment.images} />
                                     </div>
                                     <div className="w-[100%] sm:w-[57%] lg:w-[67%]">
-                                        <p className="mt-0 font-semibold">
+                                        <p className="mt-0 text-xl font-bold">
                                             {capitalize(apartment.title)}
                                         </p>
                                         <p className="mb-2 text-sm">
                                             <span>{capitalize(apartment.city.name)}, </span>
-                                            <span>{capitalize(apartment.state.name)}</span>
+                                            <span>{capitalize(apartment.state.name)} state</span>
                                         </p>
-                                        <p>{apartment.listing_type}</p>
-                                        <p>{apartment.floor_number}</p>
-                                        <p className="mt-4 font-bold">
+                                        <p className="mt-4 text-lg">
                                             <span>
-                                                NGN {apartment.price} {
+                                                &#8358; {apartment.price} {
                                                     apartment.available_for === "sale" ? ""
                                                         : `/ ${apartment.price_duration}`
                                                 }
@@ -212,7 +216,7 @@ const PaginatedProperty = (props: PaginatedPropertyProps) => {
                                         }
                                     </div>
                                 </li>
-                            </Link>
+                            </div>
                         ))}
                     </ul>
                 </div>

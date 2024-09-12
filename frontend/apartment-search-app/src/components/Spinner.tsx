@@ -1,4 +1,4 @@
-const Spinner = ({style}: SpinnerProps) => {
+const Spinner = ({ style }: SpinnerProps) => {
     return (
         <div
             role="status"

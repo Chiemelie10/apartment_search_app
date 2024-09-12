@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "react-feather";
+import { ChevronLeft, ChevronRight, Image as ImageIcon } from "react-feather";
 import { usePathname } from "next/navigation";
 
 
-const ImageCarousel = ({ images }: ImageCarouselProp) => {
+const ImageCarousel = ({ images, Imageheight }: ImageCarouselProp) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const pathname = usePathname()
 
@@ -27,11 +27,26 @@ const ImageCarousel = ({ images }: ImageCarouselProp) => {
     }
 
     return (
-        <div className="relative text-base">
+        <div
+            className={
+                `relative text-base
+                ${
+                    pathname?.includes("/apartments") ? "flex justify-center" : ""
+                }`
+            }
+        >
             <div
                 className={
-                    `relative w-full rounded-xl
-                    ${pathname?.includes("/search") ? "h-[200px]" : "h-[180px]"}`
+                    `relative rounded-xl
+                    ${
+                        pathname?.includes("/apartments") ? "w-full sm:w-[80%] md:w-[60%]"
+                            : "w-full"
+                    }
+                    ${
+                        pathname?.includes("/search") ? "h-[200px]"
+                            : Imageheight ? Imageheight
+                            : "h-[180px]"
+                    }`
                 }
             >
                 <Image
@@ -44,14 +59,22 @@ const ImageCarousel = ({ images }: ImageCarouselProp) => {
                     priority
                 />
             </div>
-            <div className="w-full px-1 flex justify-between absolute top-16">
+            <div
+                className={
+                    `px-1 w-full absolute
+                    flex ${currentIndex - 1 < 0 ? "justify-end" : "justify-between"}
+                    ${pathname?.includes("/apartments") ? "top-60" : "top-16"}`
+                }
+            >
                 <button
                     onClick={handlePrev}
                     className={
                         `flex justify-center items-center h-8 w-8 rounded-full
-                        ${currentIndex - 1 >= 0
-                            ? "bg-white" : "bg-gray-300"}
-                        ${currentIndex - 1 >= 0 ? "hover:bg-gray-300" : ""}`
+                        shadow-gray-400 shadow-[0_0_7px_rgba(0,0,0,0.12)]
+                        ${
+                            currentIndex - 1 >= 0 ?
+                            "bg-white hover:bg-gray-300" : "hidden"
+                        }`
                     }
                 >
                     <ChevronLeft />
@@ -60,19 +83,24 @@ const ImageCarousel = ({ images }: ImageCarouselProp) => {
                     onClick={handleNext}
                     className={
                         `flex justify-center items-center h-8 w-8 rounded-full
-                        ${currentIndex + 1 < images.length
-                            ? "bg-white" : "bg-gray-300"}
-                        ${currentIndex + 1 < images.length ? "hover:bg-gray-300" : ""}`
+                        shadow-gray-400 shadow-[0_0_7px_rgba(0,0,0,0.12)]
+                        ${currentIndex + 1 < images.length ?
+                            "bg-white hover:bg-gray-300" : "hidden"
+                        }`
                     }
                 >
                     <ChevronRight />
                 </button>
             </div>
             <span
-                className="bg-white inline-block w-10 text-center rounded-md
-                    absolute bottom-1 right-1"
+                className="bg-white flex justify-center items-center w-[4.5rem] h-8 p-[0.1rem]
+                    absolute bottom-1 right-1 shadow-gray-400 shadow-[0_0_7px_rgba(0,0,0,0.12)]
+                    text-center rounded-lg"
             >
-                {currentIndex + 1}/{images.length}
+                <ImageIcon className="mr-[0.3rem]" />
+                <span>
+                    {currentIndex + 1}/{images.length}
+                </span>
             </span>
         </div>
     )

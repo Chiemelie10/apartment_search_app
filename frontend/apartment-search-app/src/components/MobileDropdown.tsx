@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronUp, ChevronDown } from "react-feather"
+import { ChevronUp, ChevronDown } from "react-feather";
 
 
 const MobileDropdown = (props: DropdownProps) => {

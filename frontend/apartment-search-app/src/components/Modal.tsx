@@ -318,7 +318,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`kitchen-${id}`}
                                                 dataTestId="SearchBar-kitchen"
                                                 register={register}
@@ -333,7 +333,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`toilet-${id}`}
                                                 dataTestId="SearchBar-toilet"
                                                 register={register}
@@ -348,7 +348,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`bathroom-${id}`}
                                                 dataTestId="SearchBar-bathroom"
                                                 register={register}
@@ -363,7 +363,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`garage-${id}`}
                                                 dataTestId="SearchBar-garage"
                                                 register={register}
@@ -378,7 +378,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`swimming_pool-${id}`}
                                                 dataTestId="SearchBar-swimming_pool"
                                                 register={register}
@@ -393,7 +393,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`balcony-${id}`}
                                                 dataTestId="SearchBar-balcony"
                                                 register={register}
@@ -408,7 +408,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`veranda-${id}`}
                                                 dataTestId="SearchBar-veranda"
                                                 register={register}
@@ -423,7 +423,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`pets_allowed-${id}`}
                                                 dataTestId="SearchBar-pets_allowed"
                                                 register={register}
@@ -438,7 +438,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`pets_not_allowed-${id}`}
                                                 dataTestId="SearchBar-pets_not_allowed"
                                                 register={register}
@@ -453,7 +453,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`furnished-${id}`}
                                                 dataTestId="SearchBar-furnished"
                                                 register={register}
@@ -468,7 +468,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`elevator-${id}`}
                                                 dataTestId="SearchBar-elevator"
                                                 register={register}
@@ -483,7 +483,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`new_building-${id}`}
                                                 dataTestId="SearchBar-new_building"
                                                 register={register}
@@ -498,7 +498,7 @@ const Modal = (props: ModalProps) => {
                                             </label>
                                         </div>
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
                                                 id={`old_building-${id}`}
                                                 dataTestId="SearchBar-old_building"
                                                 register={register}

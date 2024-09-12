@@ -1,4 +1,4 @@
-const Input = (props: InputProps) => {
+const Input = <T extends unknown>(props: InputProps<T>) => {
     const {type, name, register, id, value, dataTestId} = props;
 
     // const { ref, onChange, ...rest } = register(name);

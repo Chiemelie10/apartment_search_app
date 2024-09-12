@@ -31,6 +31,11 @@ declare global {
         sortType: string;
         setSortType: Dispatch<SetStateAction<string>>;
     }
+
+    type ApartmentContextType = {
+        apartment: ServerApartmentData | {};
+        setApartment: Dispatch<SetStateAction<ServerApartmentData>>
+    }
     
     // End of context types
     
@@ -93,8 +98,15 @@ declare global {
     }
     
     // End of form data type
+
+    // Start of message form data type
+
+    type MessageFormData = {
+        whatsappPhoneNumber: string;
+        text: string;
+    }
     
-    // start of Apartment and User data type from server
+    // Start of Apartment and User data type from server
     
     type UserInterest = {
         id: string;
@@ -109,8 +121,11 @@ declare global {
     
     type UserProfile = {
         gender?: string;
+        religion?: string;
         phone_number?: string;
         phone_number_is_verified?: boolean;
+        whatsapp_number?: string;
+        whatsapp_number_is_verified?: boolean;
         interests?: Interest[];
         thumbnail?: string;
         remove_thumbnail?: boolean;
@@ -120,9 +135,9 @@ declare global {
     }
     
     type User = {
-        id?: string;
-        username?: string;
-        email?: string;
+        id: string;
+        username: string;
+        email: string;
         profile_information?: UserProfile;
         last_login?: Date;
         is_active?: boolean;
@@ -135,7 +150,7 @@ declare global {
     
     type AmenityName = "bedroom" | "bathroom" | "kitchen" | "swimming pool" | "toilet"
         | "garage" | "none" | "pets allowed" | "pets not allowed" | "new building"
-        | "old building" | "balcony" | "veranda";
+        | "old building" | "balcony" | "veranda" | "furnished";
     
     type Amenity = {
         id: string;
@@ -160,7 +175,27 @@ declare global {
         updated_at: Date;
         apartment: string;
     }
-    
+
+    type UserPreferredQualityName = "student" | "employed" | "unemployed" | "christian" | "muslim" | "male"
+        | "female" | "animal lover" | "vegetarian" | "non-smoker" | "social" | "private"
+        | "fitness enthusiast" | "gamer" | "music lover" | "bookworm" | "sports fan" | "movie buff"
+        | "work-from-home professional" | "quiet" | "lively" | "any" | "others"
+        | "rarely invites friends over" | "frequently invites friends over" | "health-conscious"
+        | "neat" | "organized" | "enjoys cooking" | "single" | "married"
+
+    type UserPreferredQuality = {
+        id: string;
+        name: UserPreferredQualityName;
+    }
+
+    type ApartmentUserPreferredQualities = {
+        id: string;
+        apartment: string;
+        user_preferred_quality: UserPreferredQuality;
+        created_at: Date;
+        updated_at: Date;
+    }
+
     type ServerApartmentData = {
         id: string;
         user: User;
@@ -186,7 +221,9 @@ declare global {
             city: string;
         };
         amenities: ServerApartmentAmenityData[];
+        user_preferred_qualities: ApartmentUserPreferredQualities[];
         nearest_bus_stop: string;
+        address?: string,
         listing_type: string;
         floor_number: number;
         title: string;
@@ -255,6 +292,7 @@ declare global {
     
     type ImageCarouselProp = {
         images: ServerApartmentImageData[];
+        Imageheight?: string
     }
     
     type PropertyAmenitiesProp = {
@@ -346,13 +384,31 @@ declare global {
         firstOptionLabel?: string;
     }
 
-    type InputProps = {
+    type InputStyle<T> = {
+        [key: string]: T;
+    }
+
+    type InputProps<T> = {
         type: string;
-        name: Path<SearchFormData>;
-        register: UseFormRegister<SearchFormData>;
+        name: Path<T>;
+        register: UseFormRegister<T>;
         id: string;
         dataTestId: string;
         value?: string | number;
+        style?: InputStyle<string>;
+    }
+
+    type TextAreaStyle<T> = {
+        [key: string]: T;
+    }
+
+    type TextAreaProps<T> = {
+        name: Path<T>;
+        register: UseFormRegister<T>;
+        id: string;
+        dataTestId: string;
+        value?: string | number;
+        style?: TextAreaStyle<string>;
     }
 
     type ModalProps = {
@@ -373,6 +429,11 @@ declare global {
         selectedSearchBarSearchedOption: string;
         priceRange: number[];
         id: string;
+    }
+
+    type VideoProps = {
+        src: string;
+        title: string;
     }
 
     // End of components type
