@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
     "@plaiceholder/next": "^3.0.0",
     "@svgr/webpack": "^8.1.0",
     "@tanstack/react-query": "^5.50.1",
@@ -21,6 +22,7 @@
     "react-feather": "^2.0.10",
     "react-hook-form": "^7.52.1",
     "react-loading-skeleton": "^3.4.0",
+    "react-share-lite": "^1.1.0",
     "sharp": "^0.33.4",
     "zod": "^3.23.8"
   },

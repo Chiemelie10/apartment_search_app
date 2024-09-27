@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-const schema = z.object({
+
+const SignUpSchema = z.object({
     username: z
         .string()
         .min(1, { message: "Username is required" }
@@ -22,4 +23,5 @@ const schema = z.object({
     path: ['confirmPassword']
 });
 
-export default schema;
+export type SignUpFormFields = z.infer<typeof SignUpSchema>;
+export default SignUpSchema;

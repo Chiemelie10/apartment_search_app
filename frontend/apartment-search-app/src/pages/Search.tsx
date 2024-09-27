@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
 import PaginatedProperty from "@/components/PaginatedProperty";
-import SearchBar from "@/components/SearchBar"
+import SearchBar from "@/components/SearchBar";
 import Spinner from "@/components/Spinner";
 import usePaginatedProperty from "@/hooks/usePaginatedProperty";
 import { useState } from "react";
@@ -131,7 +131,7 @@ const Search = ({singularHeading, pluralHeading}: SearchPageProps) => {
             </section>
             <section className="flex justify-center mt-5">
                 {isLoading && (
-                    <div className="h-60 flex justify-center mt-5">
+                    <div className="h-[50vh] flex justify-center items-center">
                         <Spinner />
                     </div>
                 )}

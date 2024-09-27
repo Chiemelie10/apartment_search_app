@@ -1,3 +1,5 @@
+import { DefaultValues, FieldValues, Path } from "react-hook-form";
+
 export const getPriceRange = (min: number, max: number, step: number): number[] => {
     /*
         This function returns an array of numbers utilized in the SearchBar component.
@@ -167,7 +169,19 @@ export const setScrollPosition = () => {
         top: 0,
         behavior: "smooth"
     })
-} 
+}
+
+export const isFormErrorKey = <TFormData extends FieldValues>(
+    /*
+        This function is used in a loop to check if the key of an error response
+        object is in defaultValues. It returns true if it is, else it returns false.
+    */
+    key: string, defaultValues?: DefaultValues<TFormData>): key is Path<TFormData> => {
+        if (!defaultValues) {
+            return false;
+        }
+        return key in defaultValues;
+    }
 
 export const otherMenuItems: MenuItems[] = [
     {

@@ -19,6 +19,7 @@ from amenity.models import Amenity
 from amenity.serializers import AmenityModelSerializer
 from user_preferred_qualities.serializers import UserPreferredQualitySerializer
 from user_preferred_qualities.models import UserPreferredQuality
+from apartment_like.models import ApartmentLike
 from .models import Apartment, ApartmentAmenity, ApartmentUserPreferredQuality
 
 
@@ -63,6 +64,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
     images = ImageSerializer(many=True, read_only=True)
     extend_time = serializers.BooleanField(default=False, write_only=True, required=False)
     advert_days_left = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
     advert_exp_time = serializers.DateTimeField(read_only=True)
     num_of_exp_time_extension = serializers.IntegerField(read_only=True)
     is_taken_time = serializers.DateTimeField(read_only=True)
@@ -139,7 +141,8 @@ class ApartmentSerializer(serializers.ModelSerializer):
             'extend_time',
             'advert_days_left',
             'advert_exp_time',
-            'num_of_exp_time_extension'
+            'num_of_exp_time_extension',
+            'liked'
         ]
 
     def to_representation(self, instance):
@@ -334,6 +337,14 @@ class ApartmentSerializer(serializers.ModelSerializer):
     def get_advert_days_left(self, obj):
         """Returns number of days left for the apartment object advert to expiration."""
         return obj.advert_days_left
+
+    extend_schema_field(serializers.BooleanField())
+    def get_liked(self, obj):
+        """Returns true if the authenticated user liked an apartment, else it returns false."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ApartmentLike.objects.filter(user=request.user, apartment=obj).exists()
+        return False
 
     def validate_amenities(self, amenities):
         """

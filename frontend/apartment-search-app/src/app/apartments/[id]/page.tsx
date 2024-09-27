@@ -1,8 +1,11 @@
+import { DetailedApartmentContextProvider } from "@/context/DetailedApartmentContext";
 import Apartment from "@/pages/Apartment";
 
 const SingleApartmentPage = () => {
   return (
-    <Apartment />
+    <DetailedApartmentContextProvider>
+      <Apartment />
+    </DetailedApartmentContextProvider>
   )
 }
   

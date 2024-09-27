@@ -1,8 +1,5 @@
-import useSearchBarContext from "@/hooks/useSearchBarContext";
 import Input from "./Input"
 import Select from "./Select"
-import useSearchBar from "@/hooks/useSearbarBar";
-// import { useRouter } from "next/navigation";
 import { Search } from "react-feather";
 import { getFloorNumbers, getListingType } from "@/utils";
 import { useEffect } from "react";
@@ -303,11 +300,14 @@ const Modal = (props: ModalProps) => {
                                     <h2 className="mb-5 font-bold">Features and amenities</h2>
                                     <div className="grid grid-cols-2 gap-x-6 gap-y-5 mb-5">
                                         <div>
-                                            <Input
+                                            <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`bedroom-${id}`}
                                                 dataTestId="SearchBar-bedroom"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Bedroom"
                                             />
@@ -321,8 +321,11 @@ const Modal = (props: ModalProps) => {
                                             <Input<SearchFormData>
                                                 id={`kitchen-${id}`}
                                                 dataTestId="SearchBar-kitchen"
-                                                register={register}
-                                                name="amenities"
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Kitchen"
                                             />
@@ -336,8 +339,11 @@ const Modal = (props: ModalProps) => {
                                             <Input<SearchFormData>
                                                 id={`toilet-${id}`}
                                                 dataTestId="SearchBar-toilet"
-                                                register={register}
-                                                name="amenities"
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Toilet"
                                             />
@@ -351,8 +357,11 @@ const Modal = (props: ModalProps) => {
                                             <Input<SearchFormData>
                                                 id={`bathroom-${id}`}
                                                 dataTestId="SearchBar-bathroom"
-                                                register={register}
-                                                name="amenities"
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Bathroom"
                                             />
@@ -364,10 +373,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`garage-${id}`}
                                                 dataTestId="SearchBar-garage"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Garage"
                                             />
@@ -379,10 +391,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`swimming_pool-${id}`}
                                                 dataTestId="SearchBar-swimming_pool"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Swimming pool"
                                             />
@@ -394,10 +409,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`balcony-${id}`}
                                                 dataTestId="SearchBar-balcony"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Balcony"
                                             />
@@ -409,10 +427,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`veranda-${id}`}
                                                 dataTestId="SearchBar-veranda"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Veranda"
                                             />
@@ -424,10 +445,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`pets_allowed-${id}`}
                                                 dataTestId="SearchBar-pets_allowed"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Pets allowed"
                                             />
@@ -439,10 +463,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`pets_not_allowed-${id}`}
                                                 dataTestId="SearchBar-pets_not_allowed"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Pets not allowed"
                                             />
@@ -454,10 +481,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`furnished-${id}`}
                                                 dataTestId="SearchBar-furnished"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Furnished"
                                             />
@@ -469,10 +499,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`elevator-${id}`}
                                                 dataTestId="SearchBar-elevator"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Elevator"
                                             />
@@ -484,10 +517,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`new_building-${id}`}
                                                 dataTestId="SearchBar-new_building"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="New building"
                                             />
@@ -499,10 +535,13 @@ const Modal = (props: ModalProps) => {
                                         </div>
                                         <div>
                                             <Input<SearchFormData>
+                                                {...register("amenities")}
+                                                outerStyle={{
+                                                    display: "inline-block"
+                                                }}
                                                 id={`old_building-${id}`}
                                                 dataTestId="SearchBar-old_building"
-                                                register={register}
-                                                name="amenities"
+                                                // name="amenities"
                                                 type="checkbox"
                                                 value="Old building"
                                             />

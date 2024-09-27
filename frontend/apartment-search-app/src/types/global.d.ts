@@ -1,10 +1,13 @@
-import { Dispatch, RefObject, SetStateAction } from "react";
+import { ComponentPropsWithoutRef, Dispatch, Ref, RefObject, SetStateAction } from "react";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import {
     SubmitHandler, FieldValues, UseFormRegister, DeepMap,
-    FieldErrors, DeepPartial, UseFormHandleSubmit, Control, Path, UseFormSetValue, UseFormReset,
+    FieldErrors, DeepPartial, UseFormHandleSubmit, Control,
+    Path, UseFormSetValue, UseFormReset, ChangeHandler,
+    UseFormRegisterReturn, DefaultValues, AsyncDefaultValues, FieldError, UseFormSetError
 } from "react-hook-form";
+import { ZodSchema } from "zod";
 
 declare global {
     // Start of utils types
@@ -34,35 +37,23 @@ declare global {
 
     type ApartmentContextType = {
         apartment: ServerApartmentData | {};
-        setApartment: Dispatch<SetStateAction<ServerApartmentData>>
+        setApartment: Dispatch<SetStateAction<ServerApartmentData>>;
     }
-    
+
+    type DetailedApartmentContextProps = {
+        isSharing: boolean;
+        setIsSharing: Dispatch<SetStateAction<boolean>>;
+        apartment: {} | ServerApartmentData;
+        setApartment: Dispatch<SetStateAction<{} | ServerApartmentData>>;
+        isSendingMessage: boolean;
+        setIsSendingMessage: Dispatch<SetStateAction<boolean>>;
+        interestsIsOpen: boolean;
+        setInterestsIsOpen: Dispatch<SetStateAction<boolean>>;
+        idealMatchIsOpen: boolean;
+        setIdealMatchIsOpen: Dispatch<SetStateAction<boolean>>;
+    }
+
     // End of context types
-    
-    // start of useSubmitForm interfaces
-
-    type UseSubmitFormProps<TFormData, TResponse> = {
-        mutateAsync: UseMutateAsyncFunction<TResponse, Error, TFormData, unknown>;
-        defaultValues: TFormData;
-        pathname: string | null;
-        query: string | null;
-    }
-
-    type UseSubmitFormReturn<TFormData extends FieldValues> = {
-        register: UseFormRegister<TFormData>;
-        onSubmit: SubmitHandler<TFormData>;
-        handleSubmit: UseFormHandleSubmit<TFormData, undefined>;
-        control: Control<TFormData>;
-        errors: FieldErrors<TFormData>;
-        isSubmitting: boolean;
-        dirtyFields: Partial<Readonly<DeepMap<DeepPartial<TFormData>, boolean>>>;
-    }
-    
-    type ErrorResponse = {
-        [key: string]: string | string[];
-    }
-    
-    // End of useSubmitForm interfaces
     
     // Custom axios error
     interface SearchFormValidationError extends AxiosError {
@@ -74,7 +65,7 @@ declare global {
     //     mutateAsync: UseMutateAsyncFunction<ServerApartmentData[], Error, SearchFormData, unknown>
     // }
     
-    // Search form data type
+    // Form data type
     
     type SearchFormAmenityData = "Bedroom" | "Kitchen" | "Toilet" | "Bathroom" | "Garage"
         | "Swimming pool" | "Furnished" | "Balcony" | "Veranda" | "Pets allowed"
@@ -96,23 +87,31 @@ declare global {
         amenities: SearchFormAmenityData[];
         sort_type: string;
     }
-    
-    // End of form data type
-
-    // Start of message form data type
 
     type MessageFormData = {
         whatsappPhoneNumber: string;
         text: string;
     }
-    
+
+    type RegisterationFormData = {
+        username: string;
+        email: string;
+        password: string;
+        confirmPassword: string;
+    }
+
+
+    // Start of Authentication data type
+
+    // End of Authentication data type
+
     // Start of Apartment and User data type from server
-    
+
     type UserInterest = {
         id: string;
         name: string;
     }
-    
+
     type Interest = {
         id: string;
         user_profile: string;
@@ -372,7 +371,7 @@ declare global {
     type SelectStyle<T> = {
         [key: string]: T;
     }
-    
+
     type SelectProps = {
         name: Path<SearchFormData>;
         register: UseFormRegister<SearchFormData>;
@@ -390,12 +389,19 @@ declare global {
 
     type InputProps<T> = {
         type: string;
-        name: Path<T>;
-        register: UseFormRegister<T>;
+        // name: Path<RegisterationFormData>;
+        // register: UseFormRegister<RegisterationFormData>;
+        // onChange: ChangeHandler;
+        label?: string;
+        handleChange?: () => void;
+        dirtyFields?: Partial<Readonly<DeepMap<DeepPartial<T>, boolean>>>;
         id: string;
         dataTestId: string;
         value?: string | number;
         style?: InputStyle<string>;
+        outerStyle?: InputStyle<string>;
+        errors?: FieldError;
+        // onChange: ChangeHandler;
     }
 
     type TextAreaStyle<T> = {
@@ -436,6 +442,14 @@ declare global {
         title: string;
     }
 
+    type ShareButtonsProps = {
+        title?: string;
+    }
+
+    type OverlayProps = {
+        removeOverlay: () => void;
+    }    
+
     // End of components type
     
     // Start of hooks type
@@ -451,6 +465,20 @@ declare global {
         statesData: State[] | undefined;
         setPage?: Dispatch<SetStateAction<number>> | undefined;
     }
+
+    // start of useSubmitForm interfaces
+
+    type useOnSubmitProps<TFormData, TResponse> = {
+        mutateAsync: UseMutateAsyncFunction<TResponse, Error, TFormData, unknown>;
+        defaultValues: DefaultValues<TFormData>;
+        setError: UseFormSetError<TFormData>;
+    }
+
+    type ErrorResponse = {
+        [key: string]: string | string[];
+    }
+
+    // End of useSubmitForm interfaces
     
     // End of hooks type
     
